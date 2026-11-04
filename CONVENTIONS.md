@@ -1,8 +1,8 @@
 # Conventions — [App name]
 
-Adapted from [reference/CONVENTIONS.md](reference/CONVENTIONS.md). Dropped electricity/money rounding. Added `GAFont`, bilingual content, and Firebase Analytics event names.
-
 Architecture: [ARCHITECTURE.md](ARCHITECTURE.md). Product: [PRD.md](PRD.md).
+
+**Source of truth:** this file owns **naming, code patterns, and the analytics event list**.
 
 ---
 
@@ -26,17 +26,18 @@ Architecture: [ARCHITECTURE.md](ARCHITECTURE.md). Product: [PRD.md](PRD.md).
 | Use case | `VerbNounUseCase` | `GetTodaysMealsUseCase` |
 | Repository (interface) | `NounRepository` | `RecipeRepository` |
 | Repository (impl) | `NounRepositoryImpl` | `RecipeRepositoryImpl` |
-| Data source | `NounRemoteDataSource` / `NounLocalDataSource` | `RecipeFirestoreDataSource` |
+| Data source | `Noun<Source>DataSource` | `DayFirestoreDataSource`, `CatalogAssetDataSource` |
 | DTO | `NounDto` | `RecipeDto` |
-| Domain model | `Noun` | `Recipe` |
+| Domain model | `Noun` | `Recipe`, `Meal`, `MealItem` |
 | Handler port | `NounHandler` | `AnalyticsHandler` |
-| Handler impl | `NounHandlerImpl` | `FirebaseAnalyticsHandler` |
+| Handler impl | `<Vendor>NounHandler` | `FirebaseAnalyticsHandler` |
+| Analytics event | `FeatureElementAction` | `TrackMealEaten` |
 
 ---
 
 ## Fonts
 
-Apply **only** via the `GAFont` enum (Design System 2.0). Do not hard-code `fontFamily` strings on widgets.
+Apply **only** via the `GAFont` enum. Do not hard-code `fontFamily` strings on widgets.
 
 ```dart
 Text(
@@ -61,10 +62,8 @@ lib/features/home/
 │   ├── home_bloc.dart
 │   ├── home_event.dart
 │   └── home_state.dart
-├── pages/
-│   └── home_page.dart
-└── tracker/
-    └── home_tracker_events.dart
+└── pages/
+    └── home_page.dart
 ```
 
 `home_page.dart` uses `BlocBuilder` and passes data into a view in `design_system` (props + callbacks). No business logic in the view.
@@ -72,7 +71,7 @@ lib/features/home/
 ### Domain vs data
 
 ```dart
-// domain/lib is a folder, not a package: lib/domain/models/recipe.dart
+// lib/domain/models/recipe.dart
 class Recipe {
   const Recipe({
     required this.id,
@@ -91,23 +90,31 @@ class Recipe {
 ```dart
 // lib/data/dtos/recipe_dto.dart
 class RecipeDto {
-  const RecipeDto({required this.id, required this.nameEn, required this.nameMr});
+  const RecipeDto({
+    required this.id,
+    required this.nameEn,
+    required this.nameMr,
+    required this.aliases,
+  });
 
   final String id;
   final String nameEn;
   final String nameMr;
+  final List<String> aliases;
 
   factory RecipeDto.fromJson(Map<String, dynamic> json) => RecipeDto(
         id: json['id'] as String,
         nameEn: json['nameEn'] as String,
         nameMr: json['nameMr'] as String,
+        aliases: (json['aliases'] as List<dynamic>? ?? const [])
+            .cast<String>(),
       );
 
   Recipe toDomain() => Recipe(
         id: id,
         nameEn: nameEn,
         nameMr: nameMr,
-        aliases: const [],
+        aliases: aliases,
       );
 }
 ```
@@ -127,14 +134,24 @@ class HomeState {
   const HomeState({
     this.loadingState = ViewState.loading,
     this.meals = const [],
+    this.hasPendingWrites = false,
     this.errorMessage,
   });
 
   final ViewState loadingState;
-  final List<MealSlot> meals;
+  final List<Meal> meals;
+  final bool hasPendingWrites; // drives the quiet "waiting to sync" indicator
   final String? errorMessage;
 }
 ```
+
+---
+
+## Firestore writes
+
+- Do **not** `await` user-data writes in BLoCs or use cases that drive UI. Fire, attach error logging, and rely on the snapshot stream (see [ARCHITECTURE.md §7](ARCHITECTURE.md#7-firestore-offline-implementation-rules))
+- Use field-level `update()` with dotted paths; no transactions for user data
+- Collections of things the user edits (meal items, shopping lines) are **maps keyed by id**, not arrays
 
 ---
 
@@ -142,11 +159,11 @@ class HomeState {
 
 Order, groups separated by a blank line:
 
-1. Dart SDK  
-2. Flutter  
-3. External packages (`flutter_bloc`, `firebase_auth`, …)  
-4. Project layers (`core`, `domain`, `design_system`, …) — package or relative as appropriate  
-5. Relative imports inside the feature  
+1. Dart SDK
+2. Flutter
+3. External packages (`flutter_bloc`, `firebase_auth`, …)
+4. Project layers (`core`, `domain`, `design_system`, …) — `package:` imports
+5. Relative imports inside the feature
 
 ---
 
@@ -169,19 +186,20 @@ Order, groups separated by a blank line:
 - Immutable models
 - Business logic in use cases, not BLoCs
 - Scale servings and grocery aggregation in domain use cases
-- Log analytics through `AnalyticsHandler`, not from `design_system`
+- Log analytics from use cases through `AnalyticsHandler`
 
 ### Don't
 
 - Don't put UI logic in `domain`
 - Don't call repositories from BLoCs (use use cases)
-- Don't use `dynamic`
+- Don't use `dynamic` outside JSON parsing at the DTO boundary
 - Don't nest widgets more than 3–4 levels; extract
 - Don't import `data` from `domain`
 - Don't use force-unwrap (`!.`) — promote to a local and null-check, or `.firstOrNull`
-- Don't fetch the full recipe catalog from Firestore on every screen
-- Don't enable phone/SMS auth in MVP
+- Don't fetch the recipe catalog from Firestore on screens — use the in-memory catalog
+- Don't enable phone/SMS auth through V1
 - Don't apply fonts except through `GAFont`
+- Don't log analytics from widgets, pages, BLoCs, or `design_system`
 
 ---
 
@@ -199,69 +217,86 @@ class RecipeRepository {}
 
 ---
 
-## Tracker events
+## Analytics events
+
+Firebase Analytics event names must be **letters, digits, and underscores only**, start with a letter, and be **≤ 40 characters**. Do not use the reserved prefixes `firebase_`, `google_`, `ga_`. Parameter names follow the same rule; ≤ 25 parameters per event.
 
 All events:
 
 ```
-app:<feature>:<element>:<action>
+<feature>_<element>_<action>
 ```
 
 | Part | Values | Examples |
 |------|--------|----------|
-| `app` | always `app` | — |
-| `<feature>` | feature name | `auth`, `home`, `recipes`, `plan`, `track`, `shopping`, `cook`, `lifecycle` |
-| `<element>` | UI or concept | `screen`, `button`, `meal`, `list`, `account`, `search`, `week` |
-| `<action>` | what happened | `viewed`, `tapped`, `completed`, `failed`, `generated`, `linked`, `marked_eaten` |
+| `<feature>` | feature name | `auth`, `onboarding`, `recipes`, `plan`, `track`, `shopping`, `cook`, `pantry` |
+| `<element>` | UI or concept | `account`, `meal`, `list`, `item`, `search`, `week`, `recommendation` |
+| `<action>` | past tense | `completed`, `generated`, `linked`, `eaten`, `selected`, `checked` |
+
+**Screens** are not custom events. Log `logScreenView(screenName: ...)` from the router observer (`home`, `recipes`, `recipe_detail`, `cook_today`, `pantry`, `plan`, `track`, `shopping`). Sessions use Firebase's automatic `session_start` / `app_open`.
 
 ### Product event list
 
-| Name | When | First needed |
-|------|------|----------------|
-| `app:lifecycle:session:started` | App foreground / session | MVP |
-| `app:onboarding:flow:completed` | Onboarding finished | MVP |
-| `app:auth:account:linked` | Google or Apple linked (`provider` param) | MVP |
-| `app:auth:account:deleted` | Account deleted | MVP |
-| `app:home:screen:viewed` | Home opened | MVP |
-| `app:home:meal:replaced` | Replace confirmed | V1 |
-| `app:cook:recommendation:shown` | Suggestions rendered | MVP (Cook Now) |
-| `app:cook:recommendation:selected` | User picks a suggestion | MVP |
-| `app:cook:recipe:cooked` | Mark Cooked | MVP |
-| `app:track:meal:marked_eaten` | Mark Eaten (`meal_type`) | MVP |
-| `app:track:meal:skipped` | Skipped | MVP |
-| `app:track:manual_food:added` | Manual food on a slot | V1 |
-| `app:recipes:screen:viewed` | Catalog | MVP |
-| `app:recipes:search:completed` | Search submitted (`has_results` bool) | MVP |
-| `app:recipes:detail:viewed` | Recipe opened (`recipe_id`) | MVP |
-| `app:recipes:favourite:toggled` | Favourite on/off | V1 |
-| `app:plan:recipe:added` | Recipe added to a slot | V1 |
-| `app:plan:week:generated` | Generate week | V1 |
-| `app:plan:week:copied` | Copy previous week | V1 |
-| `app:cook:today:opened` | आज काय बनवायचं? | V1 |
-| `app:cook:pantry:opened` | घरात काय आहे? | V1 |
-| `app:cook:pantry:recipe:selected` | Recipe from pantry match | V1 |
-| `app:shopping:list:generated` | List from plan | V1 |
-| `app:shopping:item:checked` | Check-off | V1 |
+| Name | When | Params | First needed |
+|------|------|--------|--------------|
+| `onboarding_flow_completed` | Onboarding finished | `language`, `diet`, `household_size` | MVP |
+| `auth_account_linked` | Google or Apple linked | `provider` | MVP |
+| `auth_link_conflict` | Provider already owns another account | `provider` | MVP |
+| `auth_account_deleted` | Account deleted | — | MVP |
+| `recipes_search_completed` | Search submitted | `has_results`, `query_length` | MVP |
+| `recipes_detail_viewed` | Recipe opened | `recipe_id`, `source` (`search` / `home` / `cook` / `plan` / `pantry` / `list`) | MVP |
+| `plan_recipe_added` | Recipe added to a slot | `meal_type`, `source` | MVP |
+| `cook_recommendation_shown` | Suggestions rendered | `meal_type`, `count`, `used_pantry` | MVP |
+| `cook_recommendation_selected` | User picks a suggestion | `meal_type`, `rank`, `recipe_id` | MVP |
+| `track_meal_cooked` | Mark Cooked (slot) | `meal_type`, `item_count` | MVP |
+| `track_meal_eaten` | Mark Eaten (slot) | `meal_type`, `item_count` | MVP |
+| `track_meal_skipped` | Skipped | `meal_type` | MVP |
+| `plan_meal_replaced` | Replace confirmed | `meal_type`, `rank`, `source` (`home` / `plan`) | V1 |
+| `track_manual_food_added` | Manual food on a slot | `meal_type` | V1 |
+| `recipes_favourite_toggled` | Favourite on/off | `recipe_id`, `is_favourite` | V1 |
+| `plan_week_generated` | Generate week | — | V1 |
+| `plan_week_copied` | Copy previous week | — | V1 |
+| `pantry_recipe_selected` | Recipe from pantry match | `recipe_id`, `missing_count` | V1 |
+| `shopping_list_generated` | List built/updated from plan | `line_count` | V1 |
+| `shopping_item_checked` | Check-off | `source` (`derived` / `manual`) | V1 |
 
-Core funnel: `recommendation:shown` → `recommendation:selected` → `recipe:cooked` → `meal:marked_eaten`.
+Core funnel: `cook_recommendation_shown` → `cook_recommendation_selected` → `track_meal_cooked` → `track_meal_eaten`.
 
-Parameters: snake_case, no PII (no email, no raw pantry dump). `recipe_id` is OK.
+Search success = `recipes_search_completed` followed by `recipes_detail_viewed` with `source = search`.
+
+Parameters: snake_case, no PII (no email, no names, no raw pantry dump). `recipe_id` is OK.
 
 ### Event class pattern
 
 ```dart
-final class HomeScreenViewed extends AnalyticsEvent {
-  const HomeScreenViewed();
+// lib/domain/handler/analytics_event.dart
+abstract class AnalyticsEvent {
+  const AnalyticsEvent();
+  String get name;
+  Map<String, Object> get params => const {};
+}
+
+// lib/domain/handler/events/track_events.dart
+final class TrackMealEaten extends AnalyticsEvent {
+  const TrackMealEaten({required this.mealType, required this.itemCount});
+
+  final String mealType;
+  final int itemCount;
 
   @override
-  String get name => 'app:home:screen:viewed';
+  String get name => 'track_meal_eaten';
+
+  @override
+  Map<String, Object> get params => {
+        'meal_type': mealType,
+        'item_count': itemCount,
+      };
 }
 ```
 
-| Event type | Location |
-|------------|----------|
-| Feature-specific | `lib/features/<feature>/tracker/<feature>_tracker_events.dart` |
-| App-level | `lib/domain/handler/` or `lib/handlers/` events |
+All event classes live in `lib/domain/handler/events/<feature>_events.dart`. They are logged from use cases, and `domain` cannot import `features`, so events do not live in feature folders.
+
+Add a unit test that asserts every event name matches `^[a-zA-Z][a-zA-Z0-9_]{0,39}$`.
 
 ---
 

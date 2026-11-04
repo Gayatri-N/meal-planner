@@ -4,22 +4,22 @@
 **Tagline (EN):** Your Everyday Maharashtrian Food Companion  
 **Tagline (MR):** तुमच्या रोजच्या महाराष्ट्रीय जेवणाचा साथीदार  
 **Theme line:** आज काय बनवायचं?  
-**Date:** 8 September 2026  
+**Date:** 8 September 2026 (last updated 4 November 2026)  
 **Status:** Living draft (defaults applied; see [Open questions](#35-open-questions))
-
-Prices, store rules, and Firebase quotas change. Re-check [Apple Developer](https://developer.apple.com), [Google Play](https://play.google.com/console), and [Firebase pricing](https://firebase.google.com/pricing) before you pay.
 
 ---
 
 ## How to read this project
 
-| File | Purpose |
+Each topic has **one owning file**. Other files link to it instead of restating it, so the docs do not drift apart.
+
+| File | Owns |
 |------|---------|
-| [PRD.md](PRD.md) (this file) | Product, UX, requirements, **costing and tools**, backend-for-Flutter-devs, architecture **summary** |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Flutter folder tree, layers, Firebase mapping, auth/sync, Analytics/Crashlytics placement |
-| [CONVENTIONS.md](CONVENTIONS.md) | Naming, BLoC/use case patterns, analytics event names, `GAFont` |
-| [reference/ARCHITECTURE.md](reference/ARCHITECTURE.md) | Other project — Clean Architecture / Melos / Dio. **Reference only.** |
-| [reference/CONVENTIONS.md](reference/CONVENTIONS.md) | Other project — naming and tracker events. **Reference only.** |
+| [PRD.md](PRD.md) (this file) | Product, UX, functional requirements, product rules (meal model, grocery, offline policy, statuses), compliance |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Firestore paths and data shapes, folder tree, layers, packages, auth/delete flow, offline implementation |
+| [CONVENTIONS.md](CONVENTIONS.md) | Naming, code patterns, **analytics event list**, `GAFont` |
+| [WORKPLAN.md](WORKPLAN.md) | Delivery order, milestones, exit criteria |
+| [COSTS.md](COSTS.md) | Store fees, Firebase pricing, tools inventory, budget |
 
 This app is a **single Flutter package** (not a Melos monorepo). Backend is **Firebase**, not a REST API.
 
@@ -51,10 +51,10 @@ This app is a **single Flutter package** (not a Melos monorepo). Backend is **Fi
 20. [Content and localization](#20-content-and-localization)
 21. [Data model](#21-data-model)
 22. [Offline and V1 sync policy](#22-offline-and-v1-sync-policy)
-23. [Platforms and backend](#23-platforms-and-backend-for-a-flutter-developer)
+23. [Platforms and backend](#23-platforms-and-backend)
 24. [Architecture summary](#24-architecture-summary)
 25. [Non-functional requirements](#25-non-functional-requirements)
-26. [Costing, store fees, and tools](#26-costing-store-fees-and-tools)
+26. [Costing](#26-costing)
 27. [Design direction](#27-design-direction)
 28. [Authenticity](#28-authenticity)
 29. [Acceptance criteria](#29-acceptance-criteria)
@@ -104,16 +104,21 @@ A **meal is not always one recipe**. Lunch is often Varan + rice + bhaji + koshi
 
 **Primary funnel (V1):** recommendation shown → selected → cooked → eaten.
 
-| Metric | How |
-|--------|-----|
-| Guest → Google/Apple conversion | `app:auth:account:linked` |
-| Time to first planned day | first `app:plan:recipe:added` |
-| Recommendation quality | `app:cook:recommendation:shown` → `selected` → cooked → eaten |
-| Daily meal mark rate | `app:track:meal:marked_eaten` |
-| Shopping list generation | `app:shopping:list:generated` |
-| Pantry cook | `app:cook:pantry:recipe:selected` |
-| Search success | recipe opened after search |
-| Crash-free sessions | Crashlytics |
+Targets are **starting assumptions** for the first 90 days after V1 launch. Revisit them after the first month of real data.
+
+| Metric | How | Initial target |
+|--------|-----|----------------|
+| D7 / D30 retention | Firebase retention cohorts | ≥ 25% / ≥ 12% |
+| Weekly active trackers | Users with ≥ 3 `track_meal_eaten` in a week ÷ WAU | ≥ 40% |
+| Guest → Google/Apple conversion | `auth_account_linked` ÷ new users, within 14 days | ≥ 20% |
+| Time to first planned meal | first `plan_recipe_added` after install | median < 3 min |
+| Recommendation funnel | `cook_recommendation_shown` → `cook_recommendation_selected` → `track_meal_cooked` → `track_meal_eaten` | shown → selected ≥ 30% |
+| Shopping list use (V1) | weekly users with `shopping_list_generated` ÷ weekly planners | ≥ 40% |
+| Pantry cook (V1) | `pantry_recipe_selected` | tracked; no target yet |
+| Search success | `recipes_search_completed` → `recipes_detail_viewed` (`source = search`) | ≥ 60% |
+| Crash-free users | Crashlytics | ≥ 99.5% |
+
+Event definitions: [CONVENTIONS.md § Analytics events](CONVENTIONS.md#analytics-events).
 
 **Non-goals (through V1)**
 
@@ -144,7 +149,7 @@ A **meal is not always one recipe**. Lunch is often Varan + rice + bhaji + koshi
 
 **First launch**
 
-1. Onboarding: language, vegetarian / non-vegetarian, region preference, household size
+1. Onboarding: language, vegetarian / non-vegetarian, region preference, household size, analytics consent ([§31](#31-legal-and-store-compliance))
 2. Firebase **Anonymous Auth** creates a UID
 3. The app is fully usable (plan, track, shop, pantry, favourites)
 
@@ -165,11 +170,15 @@ After a successful link, **keep** that anonymous user’s data. Do **not** creat
 
 **Shared (not per user):** recipe catalog, ingredient catalog, season/festival/occasion/region tags on recipes.
 
-**Link failure:** if Google/Apple already belongs to another UID, do **not** merge silently. Prompt to sign into the existing account. Guest data on this device is not copied across.
+**Link failure:** if Google/Apple already belongs to another UID, do **not** merge silently. Show a dialog that says, in plain words:
+
+> “This Google/Apple account already has [App name] data. Sign in to it? The meals you added as a guest on this phone will **not** move to that account.”
+
+Options: **Sign in to that account** (switches UID; guest data stays orphaned on the old anonymous UID) or **Cancel** (stay as guest, nothing changes). Never discard guest data without this explicit choice.
 
 **Guest + uninstall:** data is lost unless they linked. Say this in onboarding.
 
-**Account deletion:** delete Auth user and `users/{uid}/...`.
+**Account deletion:** in-app, needs network. Deletes all of `users/{uid}` and the Auth user. Google/Apple users re-confirm sign-in first; Apple users also get their Sign in with Apple token revoked (Apple requirement). Steps: [ARCHITECTURE.md §8](ARCHITECTURE.md#8-auth-in-code).
 
 ```mermaid
 flowchart TD
@@ -199,13 +208,15 @@ Prove the daily loop on one device, with the real domain model underneath.
 - **Meal = `meal_items[]`** from day one (one item is enough in the UI)
 - Track: Planned / Cooked / Eaten / Skipped; mark eaten; history snapshot
 - Cook Now → cooking mode (ingredients, steps, servings, Mark Cooked / Eaten) without needing a week plan
-- Repeat-meal setting (simple default: avoid last 3 days)
+- Cook Now suggestions with **simple ranking**: filter by meal type, time, diet; drop recipes eaten within the repeat window. (Full ranking in V1, [§17](#17-recommendations))
+- Repeat-meal setting (default: 3 days)
+- Bottom nav: Home, Recipes, Track. Profile / language / auth in overflow
 - Analytics + Crashlytics
-- Cached recipes work offline after first sync
+- Bundled recipe catalog works offline from first launch
 - Ingredient **IDs** on every catalog recipe (normalization from day one)
 - Region, season, festival, occasion **tags on recipes** (no browse hubs)
 
-**Out of MVP:** weekly calendar UX, grocery list, pantry UI, multi-dish editor, manual food, generate/copy/randomize week, share list.
+**Out of MVP:** Replace meal, weekly calendar UX, grocery list, pantry UI, multi-dish editor, manual food, favourites, generate/copy/randomize week, share list. In MVP the user changes a slot by removing its recipe and adding another.
 
 ### V1 — first public store product
 
@@ -245,7 +256,7 @@ V1 structures must not block V2. Do not implement V2 UIs now.
 
 ## 6. Information architecture and UX
 
-**Bottom navigation (V1):** Home, Recipes, Plan, Track, Shopping. Profile / language / auth in overflow. Pantry lives under Home (“घरात काय आहे?”) and/or Recipes; not a sixth tab.
+**Bottom navigation:** MVP: Home, Recipes, Track. V1 adds Plan and Shopping → Home, Recipes, Plan, Track, Shopping. Profile / language / auth live in an overflow menu in both. Pantry lives under Home (“घरात काय आहे?”) and/or Recipes; not a sixth tab.
 
 **Home**
 
@@ -315,14 +326,20 @@ The diary stays useful when the catalog is incomplete.
 
 ## 9. Cook Now and cooking mode
 
-**MVP+.** Not an AI feature. The user does **not** need a weekly plan to cook.
+**MVP** (single recipe, simple ranking); **V1** adds multi-item sessions and full ranking. Not an AI feature. The user does **not** need a weekly plan to cook.
 
 **Cook Now**
 
 1. User picks meal type / time / context (or starts from a recipe)
-2. App recommends what to cook **now** (rule-based; [§17](#17-recommendations))
-3. User selects a recipe or a suggested combination
+2. App recommends what to cook **now** (rule-based; MVP simple ranking in [§5](#5-scope-mvp-v1-v2), V1 in [§17](#17-recommendations))
+3. User selects a recipe (V1: or a suggested combination)
 4. Recipe (or first recipe of a combo) opens in **cooking mode**
+
+**Which slot does Cook Now write to?** The slot for today and the chosen meal type:
+
+- **Empty slot** → the recipe is added to it (status Planned until Mark Cooked / Eaten)
+- **Slot already has different items** → ask: “Replace today’s lunch with Thalipeeth?” MVP: **Replace** or **Cancel**. V1 adds **Add to this meal**
+- **Slot already contains this recipe** → just open cooking mode on it
 
 **Cooking mode** prioritizes:
 
@@ -367,7 +384,7 @@ Pantry also feeds “What should I cook?” when the user has pantry items.
 
 ## 11. Replace meal
 
-**V1** (simple replace of the whole slot in MVP may swap one recipe; V1 uses the recommendation engine).
+**V1.** Not in MVP (in MVP the user removes the recipe and adds another).
 
 When the user taps Replace:
 
@@ -395,7 +412,7 @@ Allowed without a heavy state machine:
 
 Typical happy path: Planned → Cooked → Eaten. Users may mark Planned → Eaten directly.
 
-History stores the **current** status of that slot, plus timestamps for last status change when easy.
+Status is stored **once**, on the slot itself, with a `statusChangedAt` timestamp. History reads the same record ([§13](#13-history)), so there is no second copy to keep in sync on undo or replace.
 
 ---
 
@@ -405,13 +422,15 @@ History is **what they ate (or skipped)**, not a live view of the plan.
 
 If Monday’s plan was Kanda Poha and they replace it with Thalipeeth and mark eaten, history is Thalipeeth.
 
-If a catalog recipe is later edited (new steps, renamed), **old history rows must not change**. Store:
+History is the **day records for past dates** — the same records the planner and tracker use, not a separate copy. Because each day record holds exactly what is on the slot, a replaced meal shows the replacement.
+
+If a catalog recipe is later edited (new steps, renamed), **old history must not change**. So every meal item stores:
 
 - `recipeId` when it was a catalog item (optional lookup)
-- **Snapshot:** nameEn, nameMr, servings at the time
+- **Snapshot:** nameEn, nameMr, servings at the time it was added
 - Manual items as their label
 
-Favourites stay on live recipes. History does not.
+Favourites stay on live recipes. History does not. Data shape: [ARCHITECTURE.md §6](ARCHITECTURE.md#6-data-cloud-vs-phone).
 
 ---
 
@@ -423,7 +442,7 @@ One rule everywhere: recipe detail, add to plan, weekly plan, grocery, Cook Now,
 
 `itemServings` defaults to **household size** and does not reset when moving between those screens. The user can override per meal or per item.
 
-Then grocery **sums** `scaledQty` by **ingredient ID** (not by display name).
+Then grocery **sums** `scaledQty` by **ingredient ID + unit** (not by display name). Quantities in different units are only combined when the ingredient defines a conversion (e.g. g ↔ kg); otherwise they stay as separate lines (“Onion 1 kg”, “Onion 2 pc”). Non-quantified amounts (“to taste”) appear once, without a number.
 
 Manual food has no scaled ingredients.
 
@@ -460,7 +479,7 @@ Contents:
 
 | Type | Source | When the plan changes |
 |------|--------|------------------------|
-| **Derived** | Recipe ingredients, scaled and aggregated | Recalculate on the **same** week list: new recipes add lines; removed recipes drop their derived qty; serving changes update qty. Check-off on a derived line is kept if that ingredient is still needed |
+| **Derived** | Recipe ingredients, scaled and aggregated by ingredient ID + unit | Recalculate on the **same** week list: new recipes add lines; removed recipes drop their derived qty; serving changes update qty. Check-off on a derived line is kept if that ingredient + unit is still needed |
 | **Manual** | User typed or added | **Remain**, including checked state, unless the user deletes them |
 
 Users can check off, edit quantity, remove a line, add custom items, group by category, share/export.
@@ -479,7 +498,10 @@ Deterministic rank when several recipes match. Apply filters then score. V1 orde
 2. Time budget
 3. Dietary preference
 4. Pantry availability (fewer missing = higher)
-5. Repeat-meal restriction (settings: Never / 3 days / 7 days / Flexible)
+5. Repeat-meal restriction. Settings:
+   - **Off** — repeats allowed; no filter
+   - **3 days** (default) / **7 days** — hard filter: recipes eaten within the window are not suggested
+   - **Flexible** — no hard filter; recently eaten recipes are ranked lower (rule 7)
 6. Season when tagged and current season is known
 7. Recent meal avoidance (even inside the flexible window)
 8. Favourites (light boost, V1)
@@ -499,7 +521,7 @@ English, Marathi, and transliteration must hit the same recipe.
 
 Also tolerate: capitalization, hyphen vs space (`kanda-poha` / `kanda poha`), minor spacing, aliases, common spellings (`pithla` / `pithale` / `पिठलं`).
 
-Not an AI search engine. Local FTS / normalized aliases on the recipe cache.
+Not an AI search engine. On-device search over normalized names and aliases of the bundled catalog, with a small typo tolerance. Works offline.
 
 ---
 
@@ -533,13 +555,13 @@ IDs are testable. **Release** column is the first train that must satisfy the re
 | SHOP-1 | V1 | Aggregate by ingredient ID; group by category |
 | SHOP-2 | V1 | Check off, add manual, remove, edit qty, share; regeneration keeps manuals |
 | SHOP-3 | V1 | One active list per planned week; generate/update that list, do not spawn a new list each time |
-| COOK-1 | MVP | Cook Now → cooking mode without a week plan |
+| COOK-1 | MVP | Cook Now → cooking mode without a week plan; simple ranking (meal type, time, diet, repeat window); slot rules in [§9](#9-cook-now-and-cooking-mode) |
 | COOK-2 | V1 | आज काय बनवायचं? with ranked suggestions |
 | COOK-3 | V1 | Pantry CRUD + match + missing counts + fewest extras |
 | COOK-4 | V1 | Multi-item cooking session: sequential recipes; Mark Cooked / Eaten on the slot |
-| HIST-1 | MVP | History snapshots names/servings; not a live catalog pointer only |
+| HIST-1 | MVP | History = past day records; meal items snapshot names/servings; catalog edits do not change history |
 | I18N-1 | MVP | UI EN / MR / both; natural Marathi ingredient names |
-| OFF-1 | MVP | Browse/search/cook cached recipes offline after first catalog sync |
+| OFF-1 | MVP | Browse/search/cook recipes offline, including on first launch (bundled catalog) |
 | OFF-2 | V1 | Firestore persistence for user docs; immediate local edits; queue sync; quiet waiting-to-sync; last-write-wins; no custom sync engine |
 | V2-THALI | V2 | Thali builder UI |
 | V2-STATS | V2 | Food history statistics |
@@ -553,7 +575,8 @@ IDs are testable. **Release** column is the first train that must satisfy the re
 - UI strings: ARB English + Marathi
 - Recipe and ingredient **content** is bilingual in Firestore, not only ARB
 - Search aliases on recipes **and** ingredients
-- **Catalog size:** MVP can ship a smaller seed (~25–40); V1 target ~40–80 authentic dishes covering breakfast, lunch, dinner, veg and non-veg, and major regions
+- **Catalog size:** MVP seed ~15–20; V1 target ~40–80 authentic dishes covering breakfast, lunch, dinner, veg and non-veg, and major regions
+- **Catalog ships inside the app** (JSON asset). Firestore carries only updates between app releases
 - Regions are **one or more tags per recipe**. Maharashtra is not one cuisine
 - Festival, season, occasion tags in V1 data; collection UIs in V2
 - Seed images **bundled** through V1
@@ -565,25 +588,22 @@ IDs are testable. **Release** column is the first train that must satisfy the re
 
 ## 21. Data model
 
-### Catalog (shared)
+Exact Firestore paths and field shapes live in [ARCHITECTURE.md §6](ARCHITECTURE.md#6-data-cloud-vs-phone). Product-level summary:
 
-- `recipes/{recipeId}` — names, aliases, `ingredientLines[{ingredientId, qty, unit}]`, steps, times, `regionIds[]`, diet tags, `seasonTags[]`, `festivalTags[]`, `occasionTags[]`, image asset, `contentVersion`
-- `ingredients/{ingredientId}` — `nameEn`, `nameMr`, `aliases[]`, category, `commonUnits[]`, seasonal availability
-- `meta/catalog` — `recipesVersion`
+**Shared catalog** (bundled in the app, updates via Firestore): recipes (bilingual names, aliases, ingredient lines by ingredient ID, steps, times, region/diet/season/festival/occasion tags, image) and ingredients (bilingual names, aliases, category, units, optional seasonal months).
 
-### User (`users/{uid}/...`)
+**Per user** (under the user’s UID):
 
-- `profile` — name, language, diet, region preference, household size, cooking skill, favourite regions
-- `settings` — repeat policy, language mode
-- `plans/{weekStart}` — per day, per slot: `{ status, items: MealItem[] }`
-- `history/{date}` — per slot: `{ status, items: HistoryItem[] }` where HistoryItem snapshots names + optional recipeId + servings, or manual label
-- `favourites/{recipeId}`
-- `shoppingLists/{listId}` — V1: one document per week (`listId` = week start). Lines `{ source: derived | manual, ingredientId?, label, qty, unit, checked }`. Future lists/history may reuse this collection; V1 UI shows only the current week’s list.
-- `pantry/{ingredientId}`
+| Data | Notes |
+|------|-------|
+| Profile | Language, diet, region preference, household size — exactly what onboarding collects |
+| Settings | Repeat policy, language mode |
+| Days | One record per date; each slot holds status + meal items. **Single source** for plan, track, and history |
+| Favourites | Live recipe references |
+| Shopping lists | One per planned week; derived + manual lines |
+| Pantry | Ingredient IDs the user has |
 
-**Security:** catalog readable by any signed-in user (including anonymous); user trees only if `request.auth.uid == uid`. No client writes to catalog.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for cache strategy.
+**Security:** catalog readable by any signed-in user (including anonymous); user data only by its owner. No client writes to catalog.
 
 **V2 extension points (do not build now):** extra profile members; nutrition fields already optional on recipes; thali templates as saved `meal_items` presets; stats as queries over history snapshots.
 
@@ -591,61 +611,35 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for cache strategy.
 
 ## 22. Offline and V1 sync policy
 
-After the first catalog sync, the UI must not look broken when Firebase is unreachable.
+The UI must not look broken when Firebase is unreachable — including on first launch, because the recipe catalog is bundled.
 
-**Do not build a custom offline sync engine in V1.** Use **Firestore offline persistence** for user-owned documents (see [ARCHITECTURE.md](ARCHITECTURE.md)). Do not add Cloud Functions or another sync service only for offline.
+**Do not build a custom offline sync engine in V1.** Use **Firestore offline persistence** for user-owned documents (implementation rules: [ARCHITECTURE.md §7](ARCHITECTURE.md#7-firestore-offline-implementation-rules)). Do not add Cloud Functions or another sync service only for offline.
 
 **V1 policy**
 
 - User edits **appear immediately** while offline (local cache / persistence).
 - Firestore **queues** supported writes and syncs them when connectivity returns.
-- Cached data stays usable offline (recipes after first catalog sync; user docs via persistence).
+- Cached data stays usable offline (bundled catalog; user docs via persistence).
 - If sync is pending or fails, show a quiet **“waiting to sync”** state — not a full-screen error.
 - **No custom conflict-resolution UI** in V1.
-- If the same user edits the same document on two devices, **standard Firestore last-write-wins** is acceptable.
-- Operations that **need** network: first-install catalog download, account link, account delete.
+- If the same user edits the same field on two devices, **standard Firestore last-write-wins** is acceptable. Writes are per field, so edits to *different* meals or shopping lines on two devices both survive.
+- Operations that **need** network: first anonymous sign-in, account link, account delete.
 
-**MVP offline:** browse and search cached recipes; open ingredients and steps; cook mode; mark cooked/eaten on today’s slot (queued by Firestore).
+**MVP offline:** browse and search recipes; open ingredients and steps; cook mode; mark cooked/eaten on today’s slot (queued by Firestore).
 
 **V1 offline:** also view/edit current plans, pantry, shopping list, and tracking.
 
 ---
 
-## 23. Platforms and backend (for a Flutter developer)
+## 23. Platforms and backend
 
-You will **not** write a Node/Python API through V1. One Firebase project replaces that.
-
-| Need | Platform | You configure | You code in Dart |
-|------|----------|---------------|------------------|
-| Identity | Firebase Auth (Anonymous, Google, Apple) | Enable providers; SHA-1/256; Apple Service ID; OAuth clients | `signInAnonymously`, `linkWithCredential`, `authStateChanges`, delete user |
-| Database | Cloud Firestore | Indexes, security rules | Repositories, DTOs |
-| Photos (V2) | Cloud Storage | Bucket + rules (needs Blaze) | Skip through V1; use assets |
-| Product analytics | Firebase Analytics (GA4) | Enable | Event wrapper; [§30](#30-analytics) |
-| Crashes | Firebase Crashlytics | Enable | `FlutterError.onError`, zone errors |
-| Push (V2) | FCM | Certificates / FCM | Skip V1 |
-| Flags (V2) | Remote Config | Parameters | Skip V1 |
-| Abuse | App Check | Play Integrity / DeviceCheck | SDK init |
-
-**Do not add through V1:** Mixpanel, Amplitude, Sentry, RevenueCat, Dio/REST, Cloud Functions, phone auth, LLM APIs.
-
-**Consoles:** Firebase, Google Cloud (OAuth, billing alerts), App Store Connect, Play Console.
-
-Security rules are the authorization layer.
+No custom server through V1. One Firebase project per environment (dev, prod) provides Auth (Anonymous, Google, Apple), Firestore, Analytics, Crashlytics, and App Check. Cloud Storage, FCM, Remote Config, and Cloud Functions are V2. What to configure vs code, and what **not** to add: [ARCHITECTURE.md §12–13](ARCHITECTURE.md#12-packages).
 
 ---
 
 ## 24. Architecture summary
 
-Full detail: [ARCHITECTURE.md](ARCHITECTURE.md).
-
-- **Client:** Flutter iOS + Android, single package, Clean Architecture
-- **State:** BLoC + injectable + get_it
-- **Data:** Firestore + on-device recipe/ingredient cache (Drift FTS)
-- **No Dio.** Domain meal model: `Meal` → `meal_items[]`
-- **Flow:** Page → BLoC → UseCase → repository port (domain) → impl (data)
-- **`domain` does not import `data`**
-- Fonts: `GAFont` enum only
-- Design tokens: [Design System 2.0](https://www.figma.com/design/2So9zgU3fOPHvkYRMF8b5M/Design-System-2.0?node-id=1-10)
+Flutter iOS + Android, single package, Clean Architecture with BLoC; Firestore for user data; recipe catalog bundled in the app. Full detail: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -655,115 +649,16 @@ Full detail: [ARCHITECTURE.md](ARCHITECTURE.md).
 - Devanagari + Latin; natural Marathi
 - Auth link must not drop guest data
 - Personal meal data only under that UID
-- iOS ATT if Analytics is treated as tracking
-- Firestore: do **not** re-fetch the full catalog on every Home open
-- Grocery join on ingredient ID, not strings
+- **No ATT prompt:** the app does not collect the advertising identifier (IDFA) or track users across apps. Re-evaluate if ads are ever added
+- Recipe catalog is never fetched in full from Firestore on screen open
+- Grocery join on ingredient ID + unit, not strings
+- Home and recipe screens usable within 2 s of cold start on a mid-range Android device
 
 ---
 
-## 26. Costing, store fees, and tools
+## 26. Costing
 
-Figures as of **September 2026**. Two different “Apple/Google” costs: **developer accounts** (required) vs **store commission** (only if you sell digital goods).
-
-### A. Required spend to ship
-
-| Item | Cost | Notes |
-|------|------|--------|
-| Apple Developer Program | **$99 USD / year** | App Store, TestFlight, Sign in with Apple. Local tax/GST may apply. Individual or Organization: same price; Organization needs D-U-N-S. Lapse → app removed. |
-| Google Play Console | **$25 USD once** | Non-refundable. No yearly fee. New **personal** accounts: **12 testers opted in for 14 continuous days** before production. Budget 2–4 weeks for first Play launch. |
-| Google / Apple sign-in | **$0** | Do **not** enable phone/SMS auth through V1 (per-SMS billing). |
-| Flutter, Android Studio, Xcode, GitHub | **$0** | |
-| Firebase Analytics, Crashlytics, FCM, App Check (quotas) | **$0** | |
-| Privacy policy + support URL | **$0** with a simple hosted page | Required by stores. Generators ~$0–20/month optional. Domain ~$10–15/year optional. |
-| Figma | **$0** Free to view Design System 2.0 | Paid only for extra seats. |
-| Mac | **$0 if you already have one** | Required for iOS. Largest hardware wildcard. |
-
-**Year-1 software fees with a Mac:** about **$99 + $25 = $124** plus tax. Recurring: **~$99/year** (Apple only).
-
-### B. Firebase / Google Cloud (usage)
-
-| Plan | Meaning |
-|------|---------|
-| Spark | Free, hard caps, no card. Fine if seed images are **in the app**. |
-| Blaze | Pay as you go. Same free quotas; **$0 bill** if you stay under them. Set **budget alerts at $10 and $25**. |
-
-**Always $0 on this stack:** Analytics, Crashlytics, Cloud Messaging, Performance Monitoring, A/B Testing, In-App Messaging.
-
-**Auth (anonymous, Google, Apple):** free for early usage. If you later enable **Identity Platform**, first **50,000 MAU/month** are $0, then about **$0.0055 per extra MAU** (50k–100k band). Anonymous opens count as MAU. Do not enable Identity Platform until you need MFA/SAML.
-
-**Firestore (standard edition, free quotas):** 1 GiB stored; 50,000 reads/day; 20,000 writes/day; 20,000 deletes/day; 10 GiB egress/month. Overage is Google Cloud list price (order of magnitude: ~$0.06 / 100k reads, ~$0.18 / 100k writes, ~$0.18 / GB-month — confirm region on the calculator).
-
-**Stay cheap:** cache the recipe catalog on device; bundle seed images; no phone auth; budget alerts on Blaze.
-
-| Scale (with catalog cached) | Expected bill |
-|-----------------------------|---------------|
-| You + testers | **$0** (Spark OK) |
-| ~500–1,000 DAU | **$0 to a few dollars/month** if reads stay near quota |
-| ~10,000 DAU | **Tens of dollars/month**, not hundreds |
-| ~50,000 MAU | Auth still $0 without Identity Platform; Firestore maybe **~$50–150/month** depending on listeners |
-
-Naive “load all recipes from cloud on every screen” will blow the read quota. Architecture must prevent that.
-
-**Cloud Storage:** as of **3 February 2026**, Storage requires **Blaze** even at tiny volume. Through V1: **bundle images, stay on Spark**. Add Storage in V2 with a budget cap.
-
-**Remote Config** paid overage starts **1 September 2026** after 100,000 fetches/day. Skip through V1. Cloud Functions need Blaze; skip through V1.
-
-New Google Cloud accounts sometimes include **$300 credit** — bonus, not a plan.
-
-### C. If you later charge users (V2)
-
-This is **IAP / subscription**, not the $99 Apple Developer fee.
-
-- Through V1: **free app**, **0%** store commission
-- V2 options: optional subscription (extra household, extra collections). Digital goods **must** use App Store / Play billing (no Razorpay inside the app for digital features)
-- **Apple:** enroll in [App Store Small Business Program](https://developer.apple.com/app-store/small-business-program/) (under $1M prior-year proceeds) for **15%** from day one; otherwise 30% year 1 of a subscription, 15% after 12 months for that subscriber
-- **Google Play:** subscriptions typically ~**15%** effective for small developers using Play Billing
-- Example: ₹99/month → on the order of **₹84** after 15%, then GST if applicable
-- **RevenueCat:** only when you actually sell subscriptions
-
-EU App Store terms changed in 2026 (commission on digital sales). A **free** app with no digital sales does not owe install-based Core Technology Fee at our scale. Re-check if you add IAP and EU distribution.
-
-### D. Tools inventory
-
-**Required to build and ship V1**
-
-- Flutter SDK + Dart
-- Android Studio / SDK / emulator
-- Xcode + Simulator (Mac)
-- Cursor / IDE
-- Git + GitHub
-- Apple Developer + App Store Connect + TestFlight
-- Google Play Console
-- Firebase: Auth, Firestore, Analytics, Crashlytics
-- Google Cloud: OAuth clients, SHA-1/256, billing alerts
-- Sign in with Apple capability + Service ID
-- Figma (view design system)
-- Privacy policy page + support email
-- Android keystore; Apple certificates (Xcode)
-
-**Strongly recommended, $0**
-
-- Firebase App Check
-- Google Cloud budget alerts
-- Firestore security rules + indexes
-- Release checklist (Fastlane optional)
-- TestFlight + 12 Play closed testers
-
-**Do not budget as required for V1**
-
-- Cloud Storage, Functions, FCM, Remote Config
-- Codemagic / GitHub Actions macOS minutes
-- Custom domain, Google Workspace
-- Paid Figma, Mixpanel, Sentry, AdMob, RevenueCat
-- Professional photography and legal review (plan for them; not day-one tools)
-- D-U-N-S / Organization accounts if you publish as a company
-
-### E. Suggested personal budget
-
-- **Before first store submission:** $0–25 (Play when close to launch); Apple $99 when you need TestFlight / Sign in with Apple on device
-- **Launch year:** ~$124 store fees + $0–10/month Firebase with alerts + privacy page
-- **Hardware wildcard:** Mac
-- **Do not pre-pay:** Mixpanel, VPS, SMS auth, Identity Platform, IAP infra
+Through V1 the app is free, with no ads or in-app purchases. Expected fixed cost in the launch year is about **$124** (Apple $99/year + Google Play $25 once) plus tax; Firebase should stay at **$0–10/month** with budget alerts. Full breakdown, quotas, tools, and V2 monetization notes: [COSTS.md](COSTS.md).
 
 ---
 
@@ -813,37 +708,23 @@ Use as guest (plan + history) → link Google or Apple → same data present. Li
 
 ## 30. Analytics
 
-Convention: `app:<feature>:<element>:<action>`. Full list in [CONVENTIONS.md](CONVENTIONS.md).
+Instrument the core loop, not only screens. Funnel: **recommendation shown → selected → meal cooked → meal eaten**.
 
-Instrument the core loop, not only screens:
+The event names, parameters, and the release each is needed in are owned by [CONVENTIONS.md § Analytics events](CONVENTIONS.md#analytics-events). Names use Firebase-valid `snake_case` (e.g. `track_meal_eaten`).
 
-| Event | When |
-|-------|------|
-| `app:cook:recommendation:shown` | Suggestions rendered |
-| `app:cook:recommendation:selected` | User picks one |
-| `app:recipes:detail:viewed` | Recipe opened |
-| `app:plan:recipe:added` | Added to a slot |
-| `app:cook:recipe:cooked` | Mark Cooked |
-| `app:track:meal:marked_eaten` | Mark Eaten |
-| `app:home:meal:replaced` | Replace confirmed |
-| `app:cook:pantry:recipe:selected` | Recipe from pantry match |
-| `app:shopping:list:generated` | List built/updated from plan |
-| `app:shopping:item:checked` | Check-off |
-| `app:track:manual_food:added` | Manual food on a slot |
-
-Funnel: **shown → selected → cooked → eaten**.
-
-Do not log health claims. Do not send full pantry dumps.
+Do not log health claims, names, emails, or full pantry dumps. Analytics collection respects consent ([§31](#31-legal-and-store-compliance)).
 
 ---
 
 ## 31. Legal and store compliance
 
 - Public **privacy policy** and **support URL**
-- **Account deletion** in-app (and a web path if the stores require it)
+- **Account deletion** in-app, plus a web deletion request path (Google Play requires one). Sign in with Apple token revocation on delete
 - Meal history and pantry are **personal data**
 - Play Data safety + App Store privacy nutrition labels: Auth, Analytics, Crashlytics, Firestore
-- If EU users: GDPR (lawful basis, export/delete). Developer timezone is UTC+2 — assume some EU installs
+- **India — DPDP Act 2023** (primary market): clear notice of what is collected and why, consent for non-essential processing, a way to withdraw consent and delete data, a contact for grievances. Check the current DPDP Rules before launch
+- **EU — GDPR** (developer is in UTC+2 — assume some EU installs): lawful basis, export/delete. Analytics needs **opt-in consent** for EU users; keep Analytics collection off until they agree (Firebase Consent Mode). Crashlytics can run under legitimate interest — state it in the privacy policy
+- One consent prompt in onboarding covers both: “Help improve the app by sharing usage data?” (not “anonymous”: Analytics data is pseudonymous, tied to an app instance) Default **off** in the EU, and never required to use the app
 - Recipe text and photos: you must have the right to use them
 - Age rating: likely 4+ / Everyone if no alcohol-focused content; confirm at submission
 
@@ -856,33 +737,34 @@ Do not log health claims. Do not send full pantry dumps.
 | Working name | `[App name]` (placeholder) |
 | Audience | India first (Maharashtra + diaspora) |
 | Default UI language | English, with Marathi and bilingual modes |
-| Firebase region | `asia-south1` (Mumbai) |
-| Recipe authors | Founder-curated; MVP ~25–40, V1 ~40–80 |
+| Firebase region | `asia-south1` (Mumbai) — Firestore location cannot be changed later |
+| Recipe authors | Founder-curated; MVP ~15–20, V1 ~40–80 |
 | Week start | Monday |
 | “Today” | Device timezone |
 | Monetization | Free, no ads through V1 |
 | OS | iOS 15+, Android 8 (API 26)+ |
 | Images | Bundled through V1 |
 | Environments | Separate Firebase **dev** and **prod** projects |
-| Repeat default | Every 3 days |
+| Repeat default | 3 days (hard filter) |
+| Analytics consent | Opt-in in the EU; notice + opt-out elsewhere |
 
 ---
 
 ## 33. Risks
 
-- Authentic copy and photography take more time than engineering
-- Grocery units (cups vs grams vs “to taste”) even with ingredient IDs
+- Authentic copy and photography take more time than engineering — run content as its own workstream from Setup ([WORKPLAN.md](WORKPLAN.md#content-workstream-runs-in-parallel))
+- Grocery units (cups vs grams vs “to taste”) even with ingredient IDs — mitigated by ID + unit aggregation ([§14](#14-servings))
 - Transliteration coverage
 - Anonymous → existing Google/Apple account conflict
 - Multi-item meals vs grocery double-counting shared staples (oil, salt) — accept staple overlap or cap pantry staples later; do not block V1
 - Guest users who never link and then uninstall
-- Design System 2.0 not pulled automatically (Figma MCP was not connected when these docs were first written)
+- Firestore write calls never complete while offline — UI code must not wait on them ([ARCHITECTURE.md §7](ARCHITECTURE.md#7-firestore-offline-implementation-rules))
 
 ---
 
 ## 34. Implementation order
 
-1. Meal / `meal_items` data model (including history snapshots)
+1. Meal / `meal_items` data model on day records (including name/servings snapshots)
 2. Planning + tracking + history consistency (MVP daily; V1 weekly)
 3. Pantry + Cook Now
 4. Grocery synchronization (derived vs manual)

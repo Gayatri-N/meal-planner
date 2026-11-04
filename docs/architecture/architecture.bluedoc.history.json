@@ -1,0 +1,329 @@
+{
+ "bluedoc_history": 1,
+ "created": "1.0.13",
+ "revs": [
+  {
+   "rev": "1",
+   "date": "2026-11-04",
+   "built": "2026-11-04T10:13:24+00:00",
+   "head": {
+    "id": "architecture",
+    "title": "Meal planner architecture",
+    "emoji": "🍛",
+    "subtitle": "For you and anyone who builds the app: how the Flutter app, the bundled catalog and Firebase fit together.",
+    "meta": {
+     "org": "[App name]",
+     "kind": "Presentation",
+     "type": "presentation",
+     "rev": "1",
+     "date": "2026-11-04"
+    },
+    "state": [
+     {
+      "label": "draft: diagrams built from ARCHITECTURE.md",
+      "kind": "warn"
+     }
+    ],
+    "tldr": "Seven slides with the architecture diagrams from ARCHITECTURE.md: system context, layers, a data flow, the data model, auth, and next steps. Two picks: framework and theme."
+   },
+   "sections": [
+    {
+     "id": "brief",
+     "title": "Brief",
+     "lead": "You present it yourself, to collaborators or reviewers, in about 10 minutes.",
+     "blocks": [
+      "6d0234c3ec5a9056",
+      "6036ef1e45bb1481"
+     ]
+    },
+    {
+     "id": "slides",
+     "title": "Slides",
+     "lead": "Seven slides, played top to bottom: title, context, layers, flow, data, auth, next steps.",
+     "blocks": [
+      "5bacc40eda6eccd7"
+     ]
+    }
+   ],
+   "screens": {
+    "title": "dc4e1ae3a3509045",
+    "content": "abeed55fd1bea9af",
+    "layers": "3b958d339fc08f57",
+    "flow": "30346b7f8460547b",
+    "data": "3af1239efcf97104",
+    "auth": "ebd32895bf02341a",
+    "closing": "0dd6aa5a90e9a3a0"
+   }
+  },
+  {
+   "rev": "2",
+   "date": "2026-11-04",
+   "built": "2026-11-04T10:13:35+00:00",
+   "head": {
+    "id": "architecture",
+    "title": "Meal planner architecture",
+    "emoji": "🍛",
+    "subtitle": "For you and anyone who builds the app: how the Flutter app, the bundled catalog and Firebase fit together.",
+    "meta": {
+     "org": "[App name]",
+     "kind": "Presentation",
+     "type": "presentation",
+     "rev": "2",
+     "date": "2026-11-04"
+    },
+    "state": [
+     {
+      "label": "draft: diagrams built from ARCHITECTURE.md",
+      "kind": "warn"
+     }
+    ],
+    "tldr": "Seven slides with the architecture diagrams from ARCHITECTURE.md: system context, layers, a data flow, the data model, auth, and next steps. Two picks: framework and theme.",
+    "changes": [
+     "Updated `block:brief/0`."
+    ]
+   },
+   "sections": [
+    {
+     "id": "brief",
+     "title": "Brief",
+     "lead": "You present it yourself, to collaborators or reviewers, in about 10 minutes.",
+     "blocks": [
+      "bd27ec6bf71a4a93",
+      "6036ef1e45bb1481"
+     ]
+    },
+    {
+     "id": "slides",
+     "title": "Slides",
+     "lead": "Seven slides, played top to bottom: title, context, layers, flow, data, auth, next steps.",
+     "blocks": [
+      "5bacc40eda6eccd7"
+     ]
+    }
+   ],
+   "screens": {
+    "title": "dc4e1ae3a3509045",
+    "content": "abeed55fd1bea9af",
+    "layers": "3b958d339fc08f57",
+    "flow": "30346b7f8460547b",
+    "data": "3af1239efcf97104",
+    "auth": "ebd32895bf02341a",
+    "closing": "0dd6aa5a90e9a3a0"
+   }
+  },
+  {
+   "rev": "3",
+   "date": "2026-11-04",
+   "built": "2026-11-04T10:13:42+00:00",
+   "head": {
+    "id": "architecture",
+    "title": "Meal planner architecture",
+    "emoji": "🍛",
+    "subtitle": "For you and anyone who builds the app: how the Flutter app, the bundled catalog and Firebase fit together.",
+    "meta": {
+     "org": "[App name]",
+     "kind": "Presentation",
+     "type": "presentation",
+     "rev": "3",
+     "date": "2026-11-04"
+    },
+    "state": [
+     {
+      "label": "draft: diagrams built from ARCHITECTURE.md",
+      "kind": "warn"
+     }
+    ],
+    "tldr": "Seven slides with the architecture diagrams from ARCHITECTURE.md: system context, layers, a data flow, the data model, auth, and next steps. Two picks: framework and theme.",
+    "changes": [
+     "Updated `block:brief/0`."
+    ]
+   },
+   "sections": [
+    {
+     "id": "brief",
+     "title": "Brief",
+     "lead": "You present it yourself, to collaborators or reviewers, in about 10 minutes.",
+     "blocks": [
+      "6035bf9a943e8c97",
+      "6036ef1e45bb1481"
+     ]
+    },
+    {
+     "id": "slides",
+     "title": "Slides",
+     "lead": "Seven slides, played top to bottom: title, context, layers, flow, data, auth, next steps.",
+     "blocks": [
+      "5bacc40eda6eccd7"
+     ]
+    }
+   ],
+   "screens": {
+    "title": "dc4e1ae3a3509045",
+    "content": "abeed55fd1bea9af",
+    "layers": "3b958d339fc08f57",
+    "flow": "30346b7f8460547b",
+    "data": "3af1239efcf97104",
+    "auth": "ebd32895bf02341a",
+    "closing": "0dd6aa5a90e9a3a0"
+   }
+  }
+ ],
+ "blocks": {
+  "6d0234c3ec5a9056": {
+   "type": "text",
+   "md": "**Audience:** a Flutter developer joining the project, or a reviewer checking the design before Setup starts. They see it on a laptop screen or a shared call.\n\n**Story, in order:** the phone talks straight to Firebase → how the code is layered → one request end to end (mark lunch eaten) → where data lives → how guest auth and deletion work → what to build first.\n\nEvery diagram is drawn from the current [ARCHITECTURE.md](../../ARCHITECTURE.md); nothing here is built or measured yet."
+  },
+  "6036ef1e45bb1481": {
+   "type": "checklist",
+   "id": "brief",
+   "title": "Picks",
+   "numbered": false,
+   "items": [
+    {
+     "id": "framework",
+     "text": "Which framework do the slides use?",
+     "sub": "Recommend the plain kit: its slide classes ship with bluedoc, so the deck needs nothing installed.",
+     "recommend": "plain",
+     "choices": [
+      {
+       "id": "plain",
+       "label": "Plain kit",
+       "md": "Slide classes that ship with bluedoc: titles, columns, big numbers. The deck needs nothing installed and exports as one file."
+      },
+      {
+       "id": "horizon",
+       "label": "HorizonUI",
+       "md": "HorizonUI's cards, tables and charts on the slides. Closer to a product dashboard; the slides take longer to lay out."
+      }
+     ]
+    },
+    {
+     "id": "theme",
+     "text": "Which theme?",
+     "sub": "Recommend Light: the diagrams use thin borders and muted labels, which read best on a light background.",
+     "recommend": "light",
+     "choices": [
+      {
+       "id": "light",
+       "label": "Light",
+       "md": "Suits a laptop screen, a screen share, or a PDF you print. Thin borders and grey labels stay legible."
+      },
+      {
+       "id": "dark",
+       "label": "Dark",
+       "md": "Suits a projector in a dark room. Muted labels lose some contrast, so small text on the data-model slide gets harder to read."
+      }
+     ]
+    }
+   ]
+  },
+  "5bacc40eda6eccd7": {
+   "type": "board",
+   "id": "main",
+   "targets": [
+    "presentation"
+   ],
+   "framework": "plain",
+   "themes": [
+    {
+     "id": "light",
+     "label": "Light",
+     "tokens": {
+      "accent": "#c2410c",
+      "bg": "#fffbf5",
+      "surface": "#ffffff",
+      "fg": "#1c1917",
+      "muted": "#78716c",
+      "border": "#e7e0d6"
+     }
+    },
+    {
+     "id": "dark",
+     "label": "Dark",
+     "tokens": {
+      "accent": "#fb923c",
+      "bg": "#14110f",
+      "surface": "#1f1b18",
+      "fg": "#f5f0ea",
+      "muted": "#a8a29e",
+      "border": "#3a332d"
+     }
+    }
+   ],
+   "motion": {
+    "fast": "120ms",
+    "base": "200ms",
+    "slow": "320ms",
+    "ease": "cubic-bezier(.2,0,0,1)"
+   },
+   "artboards": [
+    {
+     "id": "title",
+     "title": "Title: a Flutter app that talks straight to Firebase",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "The whole system in one line: there is no backend we write. Three ideas carry the design: Firebase is the backend, the recipe catalog ships inside the app, and Firestore's offline cache is the sync layer."
+    },
+    {
+     "id": "content",
+     "title": "System context: phone and Firebase services",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "Left: the app holds the catalog, the search index and Firestore's offline cache. Right: the four Firebase services we use through V1. Analytics only collects after consent. Storage, FCM, Remote Config and Functions wait for V2."
+    },
+    {
+     "id": "layers",
+     "title": "Layers: dependencies point inward",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "One package, layers as folders. Features depend on domain and design_system. Data and handlers implement ports declared in domain, so domain never imports data or a Firebase SDK. Only the app layer touches GetIt."
+    },
+    {
+     "id": "flow",
+     "title": "Data flow: mark lunch eaten",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "Walk the arrow left to right. The key point is the return path: the snapshot stream fires from the local cache, so the UI is instant even offline. We never await the write, because with persistence on it only completes when the server acknowledges. Analytics is logged in the use case."
+    },
+    {
+     "id": "data",
+     "title": "Data model: catalog in the app, user data in Firestore",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "Catalog: bundled JSON, with updates pulled by updatedAt and tombstones for deletions. User data: one day record per date is the plan, the tracker and history. Items carry name snapshots so catalog edits never rewrite history. Shopping lines are a map: derived keys d_ingredient_unit, manual keys m_."
+    },
+    {
+     "id": "auth",
+     "title": "Auth: guest first, link keeps the UID",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "Anonymous on first launch, link Google or Apple to the same UID. If the provider already owns another account, show an explicit dialog; never merge silently. Deletion order matters: re-auth, revoke Apple token, delete data while signed in, then delete the Auth user."
+    },
+    {
+     "id": "closing",
+     "title": "Next: build Setup S1–S3 on this shape",
+     "device": "slide",
+     "fidelity": "hifi",
+     "notes": "Setup is the next milestone in WORKPLAN.md. The Firestore location is permanent, so pick asia-south1 once. Content work starts now, alongside engineering."
+    }
+   ]
+  },
+  "bd27ec6bf71a4a93": {
+   "type": "text",
+   "md": "**Audience:** a Flutter developer joining the project, or a reviewer checking the design before Setup starts. They see it on a laptop screen or a shared call.\n\n**Story, in order:**\n1. The phone talks straight to Firebase.\n2. How the code is layered.\n3. One request end to end: mark lunch eaten.\n4. Where data lives.\n5. How guest auth and deletion work.\n6. What to build first.\n\nEvery diagram is drawn from the current [ARCHITECTURE.md](../../ARCHITECTURE.md). Nothing here is built or measured yet."
+  },
+  "6035bf9a943e8c97": {
+   "type": "text",
+   "md": "**Audience:** a Flutter developer joining the project, or a reviewer checking the design before Setup starts. They see it on a laptop screen or a shared call.\n\n**Story:** context → layers → one request end to end → data model → auth → next steps.\n\nEvery diagram is drawn from the current [ARCHITECTURE.md](../../ARCHITECTURE.md). Nothing here is built or measured yet."
+  }
+ },
+ "html": {
+  "dc4e1ae3a3509045": "<section class=\"slide center\" data-bd=\"title\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">[App name] · Architecture · 4 Nov 2026</p>\n  <h1 class=\"slide-title\" data-bd=\"headline\">A Flutter app that talks straight to Firebase</h1>\n  <p class=\"slide-body\" style=\"color:var(--muted)\" data-bd=\"presenter\">No server we write · Recipe catalog ships inside the app · Works offline from first launch</p>\n</section>\n",
+  "abeed55fd1bea9af": "<style>\n.cx-wrap{display:grid;grid-template-columns:1fr 140px 1fr;align-items:center;gap:0;flex:1}\n.cx-box{border:3px solid var(--border);background:var(--surface);border-radius:20px;padding:28px 32px}\n.cx-acc{border-color:var(--accent)}\n.cx-h{font-size:34px;font-weight:700;margin:0 0 6px}\n.cx-s{font-size:24px;color:var(--muted);margin:0}\n.cx-chip{border:2px dashed var(--border);border-radius:14px;padding:14px 20px;margin-top:16px;font-size:24px}\n.cx-col{display:flex;flex-direction:column;gap:18px}\n.cx-arrow{font-size:72px;color:var(--accent);text-align:center;line-height:1}\n.cx-svc{display:flex;justify-content:space-between;align-items:baseline;gap:16px}\n.cx-tag{font-size:20px;color:var(--muted)}\n</style>\n<section class=\"slide\" data-bd=\"context\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">System context</p>\n  <h2 class=\"slide-title\" data-bd=\"headline\">The phone is the only client; Firebase is the whole backend</h2>\n  <div class=\"cx-wrap\" data-bd=\"diagram\">\n    <div class=\"cx-box cx-acc\" data-bd=\"app\">\n      <p class=\"cx-h\">Flutter app</p>\n      <p class=\"cx-s\">iOS + Android · single package</p>\n      <div class=\"cx-chip\" data-bd=\"catalog\">📦 Bundled catalog — <b>catalog.json</b> + images</div>\n      <div class=\"cx-chip\" data-bd=\"search\">🔎 In-memory search (EN · MR · transliteration)</div>\n      <div class=\"cx-chip\" data-bd=\"cache\">💾 Firestore offline cache — the sync layer</div>\n    </div>\n    <div class=\"cx-arrow\" data-bd=\"arrow\">⇄</div>\n    <div class=\"cx-col\" data-bd=\"firebase\">\n      <div class=\"cx-box cx-svc\" data-bd=\"auth\"><span class=\"cx-h\">Auth</span><span class=\"cx-tag\">Anonymous · Google · Apple</span></div>\n      <div class=\"cx-box cx-svc\" data-bd=\"firestore\"><span class=\"cx-h\">Firestore</span><span class=\"cx-tag\">users/{uid} · catalog updates</span></div>\n      <div class=\"cx-box cx-svc\" data-bd=\"analytics\"><span class=\"cx-h\">Analytics</span><span class=\"cx-tag\">consent-gated</span></div>\n      <div class=\"cx-box cx-svc\" data-bd=\"crash\"><span class=\"cx-h\">Crashlytics</span><span class=\"cx-tag\">errors + zones</span></div>\n    </div>\n  </div>\n  <footer class=\"slide-foot\" data-n=\"2\" data-bd=\"foot\">dev + prod Firebase projects · V2 adds Storage, FCM, Remote Config, Functions</footer>\n</section>\n",
+  "3b958d339fc08f57": "<style>\n.ly-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 28px;flex:1;align-content:center}\n.ly-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 26px}\n.ly-acc{border-color:var(--accent)}\n.ly-h{font-size:30px;font-weight:700;margin:0}\n.ly-s{font-size:22px;color:var(--muted);margin:4px 0 0}\n.ly-ar{font-size:44px;color:var(--accent);text-align:center;line-height:1}\n.ly-note{font-size:22px;color:var(--accent);text-align:center;font-weight:600}\n.ly-span{grid-column:1 / -1}\n.ly-base{border-style:dashed}\n</style>\n<section class=\"slide\" data-bd=\"layers\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">Layers</p>\n  <h2 class=\"slide-title\" data-bd=\"headline\">Dependencies point inward: domain never imports data</h2>\n  <div class=\"ly-grid\" data-bd=\"diagram\">\n    <div class=\"ly-box ly-span\" data-bd=\"app\"><p class=\"ly-h\">app</p><p class=\"ly-s\">MaterialApp · go_router · GetIt (the only layer that reads the container)</p></div>\n    <div class=\"ly-ar ly-span\">↓</div>\n    <div class=\"ly-box ly-span\" data-bd=\"features\"><p class=\"ly-h\">features</p><p class=\"ly-s\">BLoC + pages: home · recipes · plan · track · shopping · pantry · auth · onboarding · settings</p></div>\n    <div class=\"ly-ar\">↓</div><div class=\"ly-ar\">↓</div><div></div>\n    <div class=\"ly-box\" data-bd=\"ds\"><p class=\"ly-h\">design_system</p><p class=\"ly-s\">views · tokens · GAFont · theme</p></div>\n    <div class=\"ly-box ly-acc\" data-bd=\"domain\"><p class=\"ly-h\">domain</p><p class=\"ly-s\">use cases · models · ports · analytics events</p></div>\n    <div></div>\n    <div></div>\n    <div class=\"ly-note\">↑ implements ports ↑</div>\n    <div></div>\n    <div></div>\n    <div class=\"ly-box\" data-bd=\"data\"><p class=\"ly-h\">data</p><p class=\"ly-s\">Firestore repos · catalog loader · DTOs</p></div>\n    <div class=\"ly-box\" data-bd=\"handlers\"><p class=\"ly-h\">handlers</p><p class=\"ly-s\">Firebase Analytics · Crashlytics adapters</p></div>\n    <div class=\"ly-box ly-base ly-span\" data-bd=\"core\"><p class=\"ly-h\">core · localization</p><p class=\"ly-s\">Result&lt;T&gt; · AppException · logger · env · ARB en / mr — used by every layer</p></div>\n  </div>\n  <footer class=\"slide-foot\" data-n=\"3\" data-bd=\"foot\">ARCHITECTURE.md §3–4</footer>\n</section>\n",
+  "30346b7f8460547b": "<style>\n.fl-row{display:flex;align-items:center;gap:14px}\n.fl-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 22px;text-align:center;flex:1}\n.fl-acc{border-color:var(--accent)}\n.fl-h{font-size:26px;font-weight:700;margin:0}\n.fl-s{font-size:19px;color:var(--muted);margin:4px 0 0}\n.fl-ar{font-size:40px;color:var(--accent)}\n.fl-back{margin-top:20px;border:3px dashed var(--accent);border-radius:18px;padding:18px 26px;font-size:26px}\n.fl-side{margin-top:20px;display:flex;gap:28px}\n.fl-side>div{flex:1}\n.fl-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}\n</style>\n<section class=\"slide\" data-bd=\"flow\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">Data flow · mark lunch eaten</p>\n  <h2 class=\"slide-title\" data-bd=\"headline\">The UI updates from the local cache before the server answers</h2>\n  <div class=\"fl-wrap\" data-bd=\"diagram\">\n    <div class=\"fl-row\" data-bd=\"forward\">\n      <div class=\"fl-box\"><p class=\"fl-h\">HomePage</p><p class=\"fl-s\">adds MealMarkedEaten</p></div>\n      <span class=\"fl-ar\">→</span>\n      <div class=\"fl-box\"><p class=\"fl-h\">TrackBloc</p><p class=\"fl-s\">no repository calls</p></div>\n      <span class=\"fl-ar\">→</span>\n      <div class=\"fl-box fl-acc\"><p class=\"fl-h\">MarkMealEaten UseCase</p><p class=\"fl-s\">business rule</p></div>\n      <span class=\"fl-ar\">→</span>\n      <div class=\"fl-box\"><p class=\"fl-h\">DayRepository</p><p class=\"fl-s\">update slots.lunch.status</p></div>\n      <span class=\"fl-ar\">→</span>\n      <div class=\"fl-box\"><p class=\"fl-h\">Firestore cache</p><p class=\"fl-s\">queues write → server</p></div>\n    </div>\n    <div class=\"fl-back\" data-bd=\"back\">↩ <b>snapshots()</b> stream fires instantly from the cache → TrackBloc → UI shows “Eaten” · <b>hasPendingWrites</b> drives the quiet “waiting to sync”</div>\n    <div class=\"fl-side\" data-bd=\"side\">\n      <div class=\"fl-box\"><p class=\"fl-h\">Use case → AnalyticsHandler</p><p class=\"fl-s\">logs track_meal_eaten (never from widgets or BLoCs)</p></div>\n      <div class=\"fl-box\"><p class=\"fl-h\">Write is not awaited</p><p class=\"fl-s\">offline the Future never completes; errors go to Crashlytics</p></div>\n    </div>\n  </div>\n  <footer class=\"slide-foot\" data-n=\"4\" data-bd=\"foot\">ARCHITECTURE.md §5, §7</footer>\n</section>\n",
+  "3af1239efcf97104": "<style>\n.dm-cols{display:grid;grid-template-columns:1fr 1.5fr;gap:36px;flex:1;align-content:center}\n.dm-box{border:3px solid var(--border);background:var(--surface);border-radius:20px;padding:26px 30px}\n.dm-acc{border-color:var(--accent)}\n.dm-h{font-size:30px;font-weight:700;margin:0 0 14px}\n.dm-tree{font-family:ui-monospace,Menlo,monospace;font-size:23px;line-height:1.55;margin:0;white-space:pre}\n.dm-m{color:var(--muted)}\n.dm-a{color:var(--accent);font-weight:700}\n</style>\n<section class=\"slide\" data-bd=\"data\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">Data model</p>\n  <h2 class=\"slide-title\" data-bd=\"headline\">One day record is the plan, the tracker and the history</h2>\n  <div class=\"dm-cols\" data-bd=\"diagram\">\n    <div class=\"dm-box\" data-bd=\"catalog\">\n      <p class=\"dm-h\">In the app (shared)</p>\n<pre class=\"dm-tree\">assets/catalog/catalog.json\n  recipes   <span class=\"dm-m\">ingredientLines by ID</span>\n  ingredients <span class=\"dm-m\">EN · MR · aliases</span>\nassets/recipes/{id}.webp\nupdates.json <span class=\"dm-m\">from Firestore</span>\n  <span class=\"dm-m\">where updatedAt &gt; last</span>\n  <span class=\"dm-m\">deleted: true = tombstone</span></pre>\n    </div>\n    <div class=\"dm-box dm-acc\" data-bd=\"user\">\n      <p class=\"dm-h\">Firestore · users/{uid}</p>\n<pre class=\"dm-tree\">users/{uid}  <span class=\"dm-m\">profile · settings (fields)</span>\n├ <span class=\"dm-a\">days/{yyyy-MM-dd}</span>\n│   slots.lunch { status, items: {itemId: …} }\n│   <span class=\"dm-m\">items snapshot nameEn · nameMr · servings</span>\n├ favourites/{recipeId}\n├ shoppingLists/{weekStart}\n│   lines { d_onion_kg, m_8f3a… }\n└ pantry/{ingredientId}</pre>\n    </div>\n  </div>\n  <footer class=\"slide-foot\" data-n=\"5\" data-bd=\"foot\">Maps keyed by id, not arrays: two devices editing different items both survive · ARCHITECTURE.md §6</footer>\n</section>\n",
+  "ebd32895bf02341a": "<style>\n.au-row{display:flex;align-items:center;gap:14px}\n.au-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 22px;text-align:center;flex:1}\n.au-acc{border-color:var(--accent)}\n.au-warn{border-color:#d97706}\n.au-h{font-size:26px;font-weight:700;margin:0}\n.au-s{font-size:19px;color:var(--muted);margin:4px 0 0}\n.au-ar{font-size:40px;color:var(--accent)}\n.au-lbl{font-size:24px;font-weight:700;color:var(--muted);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.06em}\n.au-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}\n</style>\n<section class=\"slide\" data-bd=\"auth\">\n  <p class=\"slide-kicker\" data-bd=\"kicker\">Auth</p>\n  <h2 class=\"slide-title\" data-bd=\"headline\">Guest first; linking keeps the same UID and all its data</h2>\n  <div class=\"au-wrap\" data-bd=\"diagram\">\n    <p class=\"au-lbl\">Link</p>\n    <div class=\"au-row\" data-bd=\"link\">\n      <div class=\"au-box\"><p class=\"au-h\">First launch</p><p class=\"au-s\">signInAnonymously</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box\"><p class=\"au-h\">Use as guest</p><p class=\"au-s\">plan · track · shop</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box\"><p class=\"au-h\">Google / Apple</p><p class=\"au-s\">linkWithCredential</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box au-acc\"><p class=\"au-h\">Same UID</p><p class=\"au-s\">data stays</p></div>\n    </div>\n    <div class=\"au-row\" style=\"margin-top:14px\" data-bd=\"conflict\">\n      <div class=\"au-box au-warn\"><p class=\"au-h\">credential-already-in-use</p><p class=\"au-s\">dialog: sign in to that account (guest data stays behind) or cancel — never a silent merge</p></div>\n    </div>\n    <p class=\"au-lbl\">Delete account</p>\n    <div class=\"au-row\" data-bd=\"delete\">\n      <div class=\"au-box\"><p class=\"au-h\">Re-authenticate</p><p class=\"au-s\">Google / Apple only</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box\"><p class=\"au-h\">Revoke Apple token</p><p class=\"au-s\">Apple requirement</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box\"><p class=\"au-h\">Delete users/{uid}</p><p class=\"au-s\">while still signed in</p></div>\n      <span class=\"au-ar\">→</span>\n      <div class=\"au-box\"><p class=\"au-h\">Delete Auth user</p><p class=\"au-s\">then new guest</p></div>\n    </div>\n  </div>\n  <footer class=\"slide-foot\" data-n=\"6\" data-bd=\"foot\">ARCHITECTURE.md §8 · PRD §4</footer>\n</section>\n",
+  "0dd6aa5a90e9a3a0": "<section class=\"slide center\" data-bd=\"closing\">\n  <h2 class=\"slide-title\" data-bd=\"ask\">Next: build Setup S1–S3 on this shape</h2>\n  <ul class=\"slide-body\" style=\"text-align:left\" data-bd=\"next\">\n    <li>Scaffold the single package with these folders</li>\n    <li>Create the dev Firebase project in <b>asia-south1</b> (permanent)</li>\n    <li>Write <b>catalog.json</b> and its validator; start recipe content</li>\n  </ul>\n  <footer class=\"slide-foot\" data-n=\"7\" data-bd=\"foot\">[App name] · Architecture</footer>\n</section>\n"
+ }
+}

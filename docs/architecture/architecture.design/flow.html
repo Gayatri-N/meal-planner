@@ -1,0 +1,35 @@
+<style>
+.fl-row{display:flex;align-items:center;gap:14px}
+.fl-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 22px;text-align:center;flex:1}
+.fl-acc{border-color:var(--accent)}
+.fl-h{font-size:26px;font-weight:700;margin:0}
+.fl-s{font-size:19px;color:var(--muted);margin:4px 0 0}
+.fl-ar{font-size:40px;color:var(--accent)}
+.fl-back{margin-top:20px;border:3px dashed var(--accent);border-radius:18px;padding:18px 26px;font-size:26px}
+.fl-side{margin-top:20px;display:flex;gap:28px}
+.fl-side>div{flex:1}
+.fl-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}
+</style>
+<section class="slide" data-bd="flow">
+  <p class="slide-kicker" data-bd="kicker">Data flow · mark lunch eaten</p>
+  <h2 class="slide-title" data-bd="headline">The UI updates from the local cache before the server answers</h2>
+  <div class="fl-wrap" data-bd="diagram">
+    <div class="fl-row" data-bd="forward">
+      <div class="fl-box"><p class="fl-h">HomePage</p><p class="fl-s">adds MealMarkedEaten</p></div>
+      <span class="fl-ar">→</span>
+      <div class="fl-box"><p class="fl-h">TrackBloc</p><p class="fl-s">no repository calls</p></div>
+      <span class="fl-ar">→</span>
+      <div class="fl-box fl-acc"><p class="fl-h">MarkMealEaten UseCase</p><p class="fl-s">business rule</p></div>
+      <span class="fl-ar">→</span>
+      <div class="fl-box"><p class="fl-h">DayRepository</p><p class="fl-s">update slots.lunch.status</p></div>
+      <span class="fl-ar">→</span>
+      <div class="fl-box"><p class="fl-h">Firestore cache</p><p class="fl-s">queues write → server</p></div>
+    </div>
+    <div class="fl-back" data-bd="back">↩ <b>snapshots()</b> stream fires instantly from the cache → TrackBloc → UI shows “Eaten” · <b>hasPendingWrites</b> drives the quiet “waiting to sync”</div>
+    <div class="fl-side" data-bd="side">
+      <div class="fl-box"><p class="fl-h">Use case → AnalyticsHandler</p><p class="fl-s">logs track_meal_eaten (never from widgets or BLoCs)</p></div>
+      <div class="fl-box"><p class="fl-h">Write is not awaited</p><p class="fl-s">offline the Future never completes; errors go to Crashlytics</p></div>
+    </div>
+  </div>
+  <footer class="slide-foot" data-n="4" data-bd="foot">ARCHITECTURE.md §5, §7</footer>
+</section>

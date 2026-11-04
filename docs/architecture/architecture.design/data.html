@@ -1,0 +1,37 @@
+<style>
+.dm-cols{display:grid;grid-template-columns:1fr 1.5fr;gap:36px;flex:1;align-content:center}
+.dm-box{border:3px solid var(--border);background:var(--surface);border-radius:20px;padding:26px 30px}
+.dm-acc{border-color:var(--accent)}
+.dm-h{font-size:30px;font-weight:700;margin:0 0 14px}
+.dm-tree{font-family:ui-monospace,Menlo,monospace;font-size:23px;line-height:1.55;margin:0;white-space:pre}
+.dm-m{color:var(--muted)}
+.dm-a{color:var(--accent);font-weight:700}
+</style>
+<section class="slide" data-bd="data">
+  <p class="slide-kicker" data-bd="kicker">Data model</p>
+  <h2 class="slide-title" data-bd="headline">One day record is the plan, the tracker and the history</h2>
+  <div class="dm-cols" data-bd="diagram">
+    <div class="dm-box" data-bd="catalog">
+      <p class="dm-h">In the app (shared)</p>
+<pre class="dm-tree">assets/catalog/catalog.json
+  recipes   <span class="dm-m">ingredientLines by ID</span>
+  ingredients <span class="dm-m">EN · MR · aliases</span>
+assets/recipes/{id}.webp
+updates.json <span class="dm-m">from Firestore</span>
+  <span class="dm-m">where updatedAt &gt; last</span>
+  <span class="dm-m">deleted: true = tombstone</span></pre>
+    </div>
+    <div class="dm-box dm-acc" data-bd="user">
+      <p class="dm-h">Firestore · users/{uid}</p>
+<pre class="dm-tree">users/{uid}  <span class="dm-m">profile · settings (fields)</span>
+├ <span class="dm-a">days/{yyyy-MM-dd}</span>
+│   slots.lunch { status, items: {itemId: …} }
+│   <span class="dm-m">items snapshot nameEn · nameMr · servings</span>
+├ favourites/{recipeId}
+├ shoppingLists/{weekStart}
+│   lines { d_onion_kg, m_8f3a… }
+└ pantry/{ingredientId}</pre>
+    </div>
+  </div>
+  <footer class="slide-foot" data-n="5" data-bd="foot">Maps keyed by id, not arrays: two devices editing different items both survive · ARCHITECTURE.md §6</footer>
+</section>
