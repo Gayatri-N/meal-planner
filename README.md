@@ -21,6 +21,16 @@ flutter analyze
 flutter test
 ```
 
+## Recipe content
+
+Recipes and ingredients live in [`assets/catalog/catalog.json`](assets/catalog/catalog.json) and ship inside the app. After editing it, check it:
+
+```sh
+dart run tool/validate_catalog.dart
+```
+
+It lists every problem (unknown ingredient, unit not allowed for that ingredient, Marathi not in Devanagari, duplicate ids, unknown region…) and counts recipes by `contentStatus` (`draft` → `tested` → `reviewed`). `flutter test` runs the same check.
+
 ## Status
 
 Setup S1 done: app shell, folders, DI, routing, theme tokens, `AppFont`, EN/MR strings. Firebase (S2) is not connected yet; analytics and crash reporting log to the console.
