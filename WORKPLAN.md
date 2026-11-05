@@ -23,7 +23,7 @@ The **domain model from MVP is the V1 model** (`meal_items[]`, ingredient IDs, h
 | Functionality | Setup | MVP | V1 | V2 |
 |---------------|:-----:|:---:|:--:|:--:|
 | Flutter + Firebase + Crashlytics + Analytics wiring | ● | | | |
-| Folder tree, BLoC, injectable, `GAFont`, `Result` | ● | | | |
+| Folder tree, BLoC, injectable, `AppFont`, `Result` | ● | | | |
 | Guest (anonymous) auth | | ● | | |
 | Google + Apple link, same UID, no silent merge | | ● | | |
 | Account delete | | ● | | |
@@ -83,7 +83,7 @@ Do this once before MVP features.
 - Single package, folders per [ARCHITECTURE.md](ARCHITECTURE.md): `app`, `core`, `design_system`, `localization`, `domain`, `data`, `features`, `handlers`  
 - `go_router`, `flutter_bloc`, `injectable` + `get_it`, `equatable`  
 - `Result<T>`, `AppException`, logger  
-- Theme tokens + **`GAFont` only** for fonts  
+- Theme tokens + **`AppFont` only** for fonts  
 - `main_dev.dart` (prod flavor later)
 
 **Empty feature folders:** `auth`, `onboarding`, `home`, `recipes`, `track`, `settings`. Stubs: `plan`, `shopping`, `pantry` (filled in V1).
@@ -302,7 +302,7 @@ Work top to bottom. Finish a version’s exit criteria before starting the next.
 - Page → BLoC → UseCase → domain port → Firestore / cache  
 - `domain` does not import `data`  
 - No custom offline sync; no Cloud Functions **only** for sync  
-- Fonts via `GAFont`  
+- Fonts via `AppFont`  
 - Analytics names only from [CONVENTIONS.md](CONVENTIONS.md) (Firebase-valid `snake_case`, ≤ 40 chars); logged from use cases  
 - Never await Firestore user-data writes in UI flows  
 - Natural Marathi, not literal machine translation  
