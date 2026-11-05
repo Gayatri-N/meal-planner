@@ -1,0 +1,18 @@
+{
+  "@@locale": "en",
+  "appTitle": "Meal Planner",
+  "@appTitle": { "description": "Working app name; final name TBD" },
+  "navHome": "Home",
+  "@navHome": { "description": "Bottom navigation: Home tab" },
+  "navRecipes": "Recipes",
+  "@navRecipes": { "description": "Bottom navigation: Recipes tab" },
+  "navTrack": "Track",
+  "@navTrack": { "description": "Bottom navigation: Track tab (meal diary)" },
+  "homeTitle": "What should we cook today?",
+  "@homeTitle": { "description": "Home screen title; the app's theme line" },
+  "homePlaceholder": "Today's breakfast, lunch and dinner will appear here.",
+  "recipesTitle": "Recipes",
+  "recipesPlaceholder": "Maharashtrian recipes will appear here.",
+  "trackTitle": "Track",
+  "trackPlaceholder": "A record of what you ate will appear here."
+}

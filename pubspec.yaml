@@ -1,0 +1,31 @@
+name: mealplanner
+description: "Maharashtrian meal planner, recipe book, grocery assistant, and food diary."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  equatable: ^3.0.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+  get_it: ^9.3.0
+  go_router: ^18.1.2
+  injectable: ^3.0.0
+  intl: ^0.20.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.16.1
+  injectable_generator: ^3.1.3
+  bloc_test: ^10.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true

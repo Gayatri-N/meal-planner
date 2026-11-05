@@ -1,0 +1,13 @@
+{
+  "@@locale": "mr",
+  "appTitle": "मील प्लॅनर",
+  "navHome": "मुख्य पान",
+  "navRecipes": "पाककृती",
+  "navTrack": "नोंद",
+  "homeTitle": "आज काय बनवायचं?",
+  "homePlaceholder": "आजचा नाश्ता, दुपारचं आणि रात्रीचं जेवण इथे दिसेल.",
+  "recipesTitle": "पाककृती",
+  "recipesPlaceholder": "महाराष्ट्रीय पाककृती इथे दिसतील.",
+  "trackTitle": "नोंद",
+  "trackPlaceholder": "तुम्ही काय खाल्लं याची नोंद इथे दिसेल."
+}
