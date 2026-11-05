@@ -1,0 +1,33 @@
+<style>
+.cx-wrap{display:grid;grid-template-columns:1fr 140px 1fr;align-items:center;gap:0;flex:1}
+.cx-box{border:3px solid var(--border);background:var(--surface);border-radius:20px;padding:28px 32px}
+.cx-acc{border-color:var(--accent)}
+.cx-h{font-size:34px;font-weight:700;margin:0 0 6px}
+.cx-s{font-size:24px;color:var(--muted);margin:0}
+.cx-chip{border:2px dashed var(--border);border-radius:14px;padding:14px 20px;margin-top:16px;font-size:24px}
+.cx-col{display:flex;flex-direction:column;gap:18px}
+.cx-arrow{font-size:72px;color:var(--accent);text-align:center;line-height:1}
+.cx-svc{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.cx-tag{font-size:20px;color:var(--muted)}
+</style>
+<section class="slide" data-bd="context">
+  <p class="slide-kicker" data-bd="kicker">System context</p>
+  <h2 class="slide-title" data-bd="headline">The phone is the only client; Firebase is the whole backend</h2>
+  <div class="cx-wrap" data-bd="diagram">
+    <div class="cx-box cx-acc" data-bd="app">
+      <p class="cx-h">Flutter app</p>
+      <p class="cx-s">iOS + Android · single package</p>
+      <div class="cx-chip" data-bd="catalog">📦 Bundled catalog — <b>catalog.json</b> + images</div>
+      <div class="cx-chip" data-bd="search">🔎 In-memory search (EN · MR · transliteration)</div>
+      <div class="cx-chip" data-bd="cache">💾 Firestore offline cache — the sync layer</div>
+    </div>
+    <div class="cx-arrow" data-bd="arrow">⇄</div>
+    <div class="cx-col" data-bd="firebase">
+      <div class="cx-box cx-svc" data-bd="auth"><span class="cx-h">Auth</span><span class="cx-tag">Anonymous · Google · Apple</span></div>
+      <div class="cx-box cx-svc" data-bd="firestore"><span class="cx-h">Firestore</span><span class="cx-tag">users/{uid} · catalog updates</span></div>
+      <div class="cx-box cx-svc" data-bd="analytics"><span class="cx-h">Analytics</span><span class="cx-tag">consent-gated</span></div>
+      <div class="cx-box cx-svc" data-bd="crash"><span class="cx-h">Crashlytics</span><span class="cx-tag">errors + zones</span></div>
+    </div>
+  </div>
+  <footer class="slide-foot" data-n="2" data-bd="foot">dev + prod Firebase projects · V2 adds Storage, FCM, Remote Config, Functions</footer>
+</section>

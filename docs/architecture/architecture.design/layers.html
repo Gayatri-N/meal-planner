@@ -1,0 +1,32 @@
+<style>
+.ly-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 28px;flex:1;align-content:center}
+.ly-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 26px}
+.ly-acc{border-color:var(--accent)}
+.ly-h{font-size:30px;font-weight:700;margin:0}
+.ly-s{font-size:22px;color:var(--muted);margin:4px 0 0}
+.ly-ar{font-size:44px;color:var(--accent);text-align:center;line-height:1}
+.ly-note{font-size:22px;color:var(--accent);text-align:center;font-weight:600}
+.ly-span{grid-column:1 / -1}
+.ly-base{border-style:dashed}
+</style>
+<section class="slide" data-bd="layers">
+  <p class="slide-kicker" data-bd="kicker">Layers</p>
+  <h2 class="slide-title" data-bd="headline">Dependencies point inward: domain never imports data</h2>
+  <div class="ly-grid" data-bd="diagram">
+    <div class="ly-box ly-span" data-bd="app"><p class="ly-h">app</p><p class="ly-s">MaterialApp · go_router · GetIt (the only layer that reads the container)</p></div>
+    <div class="ly-ar ly-span">↓</div>
+    <div class="ly-box ly-span" data-bd="features"><p class="ly-h">features</p><p class="ly-s">BLoC + pages: home · recipes · plan · track · shopping · pantry · auth · onboarding · settings</p></div>
+    <div class="ly-ar">↓</div><div class="ly-ar">↓</div><div></div>
+    <div class="ly-box" data-bd="ds"><p class="ly-h">design_system</p><p class="ly-s">views · tokens · GAFont · theme</p></div>
+    <div class="ly-box ly-acc" data-bd="domain"><p class="ly-h">domain</p><p class="ly-s">use cases · models · ports · analytics events</p></div>
+    <div></div>
+    <div></div>
+    <div class="ly-note">↑ implements ports ↑</div>
+    <div></div>
+    <div></div>
+    <div class="ly-box" data-bd="data"><p class="ly-h">data</p><p class="ly-s">Firestore repos · catalog loader · DTOs</p></div>
+    <div class="ly-box" data-bd="handlers"><p class="ly-h">handlers</p><p class="ly-s">Firebase Analytics · Crashlytics adapters</p></div>
+    <div class="ly-box ly-base ly-span" data-bd="core"><p class="ly-h">core · localization</p><p class="ly-s">Result&lt;T&gt; · AppException · logger · env · ARB en / mr — used by every layer</p></div>
+  </div>
+  <footer class="slide-foot" data-n="3" data-bd="foot">ARCHITECTURE.md §3–4</footer>
+</section>

@@ -1,0 +1,41 @@
+<style>
+.au-row{display:flex;align-items:center;gap:14px}
+.au-box{border:3px solid var(--border);background:var(--surface);border-radius:18px;padding:18px 22px;text-align:center;flex:1}
+.au-acc{border-color:var(--accent)}
+.au-warn{border-color:#d97706}
+.au-h{font-size:26px;font-weight:700;margin:0}
+.au-s{font-size:19px;color:var(--muted);margin:4px 0 0}
+.au-ar{font-size:40px;color:var(--accent)}
+.au-lbl{font-size:24px;font-weight:700;color:var(--muted);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.06em}
+.au-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}
+</style>
+<section class="slide" data-bd="auth">
+  <p class="slide-kicker" data-bd="kicker">Auth</p>
+  <h2 class="slide-title" data-bd="headline">Guest first; linking keeps the same UID and all its data</h2>
+  <div class="au-wrap" data-bd="diagram">
+    <p class="au-lbl">Link</p>
+    <div class="au-row" data-bd="link">
+      <div class="au-box"><p class="au-h">First launch</p><p class="au-s">signInAnonymously</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box"><p class="au-h">Use as guest</p><p class="au-s">plan · track · shop</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box"><p class="au-h">Google / Apple</p><p class="au-s">linkWithCredential</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box au-acc"><p class="au-h">Same UID</p><p class="au-s">data stays</p></div>
+    </div>
+    <div class="au-row" style="margin-top:14px" data-bd="conflict">
+      <div class="au-box au-warn"><p class="au-h">credential-already-in-use</p><p class="au-s">dialog: sign in to that account (guest data stays behind) or cancel — never a silent merge</p></div>
+    </div>
+    <p class="au-lbl">Delete account</p>
+    <div class="au-row" data-bd="delete">
+      <div class="au-box"><p class="au-h">Re-authenticate</p><p class="au-s">Google / Apple only</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box"><p class="au-h">Revoke Apple token</p><p class="au-s">Apple requirement</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box"><p class="au-h">Delete users/{uid}</p><p class="au-s">while still signed in</p></div>
+      <span class="au-ar">→</span>
+      <div class="au-box"><p class="au-h">Delete Auth user</p><p class="au-s">then new guest</p></div>
+    </div>
+  </div>
+  <footer class="slide-foot" data-n="6" data-bd="foot">ARCHITECTURE.md §8 · PRD §4</footer>
+</section>
