@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../design_system/views/app_shell_view.dart';
 import '../../features/home/pages/home_page.dart';
+import '../../features/recipes/bloc/recipe_detail_bloc.dart';
+import '../../features/recipes/bloc/recipes_bloc.dart';
+import '../../features/recipes/pages/recipe_detail_page.dart';
 import '../../features/recipes/pages/recipes_page.dart';
 import '../../features/track/pages/track_page.dart';
 import '../../localization/l10n.dart';
+import '../di/di.dart';
 
 abstract final class AppRoutes {
   static const home = '/home';
@@ -13,10 +18,16 @@ abstract final class AppRoutes {
   static const track = '/track';
 }
 
+/// Dev aid: `--dart-define=INITIAL_ROUTE=/recipes/pithla` opens that screen.
+const _initialRoute = String.fromEnvironment(
+  'INITIAL_ROUTE',
+  defaultValue: AppRoutes.home,
+);
+
 /// MVP tabs: Home, Recipes, Track. V1 adds Plan and Shopping branches.
 GoRouter createAppRouter() {
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation: _initialRoute,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -34,7 +45,23 @@ GoRouter createAppRouter() {
             routes: [
               GoRoute(
                 path: AppRoutes.recipes,
-                builder: (context, state) => const RecipesPage(),
+                builder: (context, state) => BlocProvider(
+                  create: (_) =>
+                      getIt<RecipesBloc>()..add(const RecipesStarted()),
+                  child: const RecipesPage(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => BlocProvider(
+                      create: (_) => getIt<RecipeDetailBloc>()
+                        ..add(
+                          RecipeDetailStarted(state.pathParameters['id'] ?? ''),
+                        ),
+                      child: const RecipeDetailPage(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
