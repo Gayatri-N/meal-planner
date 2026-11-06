@@ -17,7 +17,7 @@ Each topic has **one owning file**. Other files link to it instead of restating 
 |------|---------|
 | [PRD.md](PRD.md) (this file) | Product, UX, functional requirements, product rules (meal model, grocery, offline policy, statuses), compliance |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Firestore paths and data shapes, folder tree, layers, packages, auth/delete flow, offline implementation |
-| [CONVENTIONS.md](CONVENTIONS.md) | Naming, code patterns, **analytics event list**, `GAFont` |
+| [CONVENTIONS.md](CONVENTIONS.md) | Naming, code patterns, **analytics event list**, `AppFont` |
 | [WORKPLAN.md](WORKPLAN.md) | Delivery order, milestones, exit criteria |
 | [COSTS.md](COSTS.md) | Store fees, Firebase pricing, tools inventory, budget |
 
@@ -668,7 +668,7 @@ Warm, homely, traditional but modern, simple, family-friendly. Not a Western cal
 
 Subtle Maharashtrian cues (Warli-inspired pattern, Devanagari labels, food photography) without clutter. Usability first.
 
-Follow Design System 2.0 for components and tokens. Apply fonts only via **`GAFont`**.
+Use the app's own design tokens (`lib/design_system/tokens/`) for colours, spacing, radius, and type; a Figma file of our own can come later. Apply fonts only via **`AppFont`**.
 
 ---
 

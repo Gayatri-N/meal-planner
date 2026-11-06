@@ -156,6 +156,85 @@
      ]
     }
    ]
+  },
+  {
+   "rev": "3",
+   "date": "2026-11-04",
+   "built": "2026-11-04T13:36:15+00:00",
+   "head": {
+    "id": "versions",
+    "title": "What we build in MVP, V1 and V2",
+    "emoji": "🗺️",
+    "subtitle": "See what each version contains, when it counts as done, and what waits for later.",
+    "meta": {
+     "org": "[App name]",
+     "kind": "Roadmap",
+     "type": "docs",
+     "rev": "3",
+     "date": "2026-11-04"
+    },
+    "state": [
+     {
+      "label": "from WORKPLAN.md and PRD §5 · nothing built yet",
+      "kind": "info"
+     }
+    ],
+    "tldr": "Four steps: **Setup** (shell + Firebase dev), **MVP** (daily loop, one dish per meal, internal builds), **V1** (first public app: week plan, grocery, pantry, multi-dish meals) and **V2** (thali, regions, festivals, stats, family, paid). The meal data model is final from MVP. Later versions add screens, not migrations.",
+    "changes": [
+     "Rename GAFont to AppFont"
+    ]
+   },
+   "sections": [
+    {
+     "id": "map",
+     "title": "The four versions",
+     "lead": "Each version must meet its exit criteria before the next one starts; open a node to see its workstreams.",
+     "blocks": [
+      "3f619fbe2ace2ba2"
+     ]
+    },
+    {
+     "id": "mvp",
+     "title": "MVP: the daily loop on one device",
+     "lead": "MVP plans, cooks and tracks today's meals with one dish per slot; there's no week view, grocery list or pantry.",
+     "blocks": [
+      "af3a6d06a3d3c262",
+      "dda717af37579359"
+     ]
+    },
+    {
+     "id": "v1",
+     "title": "V1: the first public product",
+     "lead": "V1 turns the daily loop into a planner, diary and kirana list and ships to both stores.",
+     "blocks": [
+      "31f132f1a6930ca3"
+     ]
+    },
+    {
+     "id": "v2",
+     "title": "V2: depth after launch",
+     "lead": "V2 starts only once V1 is in stores; it adds screens on the V1 data, not a new meal model.",
+     "blocks": [
+      "1933b1d6a96670d4"
+     ]
+    },
+    {
+     "id": "content",
+     "title": "Content runs alongside every version",
+     "lead": "Recipes, photos and Marathi review are the biggest schedule risk, so they start at Setup.",
+     "blocks": [
+      "070a2dff035d5503"
+     ]
+    },
+    {
+     "id": "order",
+     "title": "Build order",
+     "lead": "Work top to bottom; the content workstream runs in parallel.",
+     "blocks": [
+      "7ff8d04a456b6a14"
+     ]
+    }
+   ]
   }
  ],
  "blocks": {
@@ -698,6 +777,301 @@
      "sub": "Thali and collections first is the natural follow-on.",
      "refs": [
       "roadmap/v2"
+     ]
+    }
+   ]
+  },
+  "3f619fbe2ace2ba2": {
+   "type": "canvas",
+   "id": "roadmap",
+   "title": "Setup → MVP → V1 → V2",
+   "rootLabel": "[App name]",
+   "height": 420,
+   "nodes": [
+    {
+     "id": "setup",
+     "label": "Setup",
+     "sub": "developer only",
+     "kind": "process",
+     "col": 0,
+     "row": 0,
+     "md": "Repo, Firebase dev project, design tokens, empty shell. **Exit:** the app builds and runs on a device, signed in anonymously, with the bundled catalog loading.",
+     "children": {
+      "nodes": [
+       {
+        "id": "s1",
+        "label": "S1 Flutter app",
+        "sub": "folders, BLoC, DI, AppFont",
+        "col": 0,
+        "row": 0
+       },
+       {
+        "id": "s2",
+        "label": "S2 Firebase dev",
+        "sub": "asia-south1, rules, Crashlytics",
+        "col": 1,
+        "row": 0
+       },
+       {
+        "id": "s3",
+        "label": "S3 Content pipeline",
+        "sub": "catalog.json + validator",
+        "col": 2,
+        "row": 0
+       }
+      ]
+     }
+    },
+    {
+     "id": "mvp",
+     "label": "MVP",
+     "sub": "internal TestFlight / APK",
+     "kind": "app",
+     "col": 1,
+     "row": 0,
+     "md": "**Exit:** a guest on a real device onboards, searches recipes, puts one dish on today, Cook Now → Mark Cooked/Eaten, sees history, and links Google/Apple without losing data.",
+     "children": {
+      "nodes": [
+       {
+        "id": "m1",
+        "label": "M1 Identity",
+        "sub": "guest, link, delete",
+        "col": 0,
+        "row": 0
+       },
+       {
+        "id": "m2",
+        "label": "M2 Onboarding",
+        "sub": "language, diet, consent",
+        "col": 1,
+        "row": 0
+       },
+       {
+        "id": "m3",
+        "label": "M3 Catalog + search",
+        "sub": "bundled, EN/MR/aliases",
+        "col": 2,
+        "row": 0
+       },
+       {
+        "id": "m4",
+        "label": "M4 Meal model",
+        "sub": "days/{date}, meal_items",
+        "col": 0,
+        "row": 1
+       },
+       {
+        "id": "m5",
+        "label": "M5 Home + Cook Now",
+        "sub": "simple ranking",
+        "col": 1,
+        "row": 1
+       },
+       {
+        "id": "m6",
+        "label": "M6 Track + history",
+        "sub": "statuses, analytics",
+        "col": 2,
+        "row": 1
+       },
+       {
+        "id": "m7",
+        "label": "M7 Offline",
+        "sub": "cache, waiting to sync",
+        "col": 0,
+        "row": 2
+       },
+       {
+        "id": "m8",
+        "label": "M8 Ship internal",
+        "sub": "~15–20 recipes",
+        "col": 1,
+        "row": 2
+       }
+      ]
+     }
+    },
+    {
+     "id": "v1",
+     "label": "V1",
+     "sub": "Play + App Store",
+     "kind": "app",
+     "col": 2,
+     "row": 0,
+     "md": "**Exit:** PRD acceptance loops A–E pass: plan and eat, pantry, grocery integrity, diary without catalog, auth keeps data.",
+     "children": {
+      "nodes": [
+       {
+        "id": "v11",
+        "label": "Multi-item meals",
+        "sub": "one cooking session",
+        "col": 0,
+        "row": 0
+       },
+       {
+        "id": "v12",
+        "label": "Manual food + snacks",
+        "sub": "tea, leftovers",
+        "col": 1,
+        "row": 0
+       },
+       {
+        "id": "v13",
+        "label": "Weekly plan",
+        "sub": "generate, copy, servings",
+        "col": 2,
+        "row": 0
+       },
+       {
+        "id": "v14",
+        "label": "Ranking + replace",
+        "sub": "9-rule engine, no LLM",
+        "col": 0,
+        "row": 1
+       },
+       {
+        "id": "v15",
+        "label": "Pantry",
+        "sub": "fewest missing first",
+        "col": 1,
+        "row": 1
+       },
+       {
+        "id": "v16",
+        "label": "Grocery list",
+        "sub": "derived vs manual",
+        "col": 2,
+        "row": 1
+       },
+       {
+        "id": "v17",
+        "label": "Favourites + 5-tab nav",
+        "col": 0,
+        "row": 2
+       },
+       {
+        "id": "v18",
+        "label": "Full offline + funnel",
+        "col": 1,
+        "row": 2
+       },
+       {
+        "id": "v19",
+        "label": "Content + stores",
+        "sub": "40–80 recipes, listings",
+        "col": 2,
+        "row": 2
+       }
+      ]
+     }
+    },
+    {
+     "id": "v2",
+     "label": "V2",
+     "sub": "after V1 is in stores",
+     "kind": "app",
+     "state": "proposed",
+     "col": 3,
+     "row": 0,
+     "md": "Depth on top of the V1 data model. Order follows product priority; thali and collections are the natural next step.",
+     "children": {
+      "nodes": [
+       {
+        "id": "d",
+        "label": "Discover",
+        "sub": "regions, festivals",
+        "col": 0,
+        "row": 0
+       },
+       {
+        "id": "t",
+        "label": "Thali builder",
+        "sub": "composes meal_items",
+        "col": 1,
+        "row": 0
+       },
+       {
+        "id": "i",
+        "label": "Insights",
+        "sub": "माझा आहार stats",
+        "col": 2,
+        "row": 0
+       },
+       {
+        "id": "r",
+        "label": "Smarter recs",
+        "sub": "day, region, festival",
+        "col": 0,
+        "row": 1
+       },
+       {
+        "id": "h",
+        "label": "Household",
+        "sub": "family profiles",
+        "col": 1,
+        "row": 1
+       },
+       {
+        "id": "n",
+        "label": "Nutrition UI",
+        "col": 2,
+        "row": 1
+       },
+       {
+        "id": "p",
+        "label": "Platform",
+        "sub": "FCM, Storage, Functions",
+        "col": 0,
+        "row": 2
+       },
+       {
+        "id": "mo",
+        "label": "Monetization",
+        "sub": "subscription / ads",
+        "col": 1,
+        "row": 2
+       }
+      ]
+     }
+    }
+   ],
+   "edges": [
+    {
+     "from": "setup",
+     "to": "mvp",
+     "kind": "dep",
+     "label": "shell runs"
+    },
+    {
+     "from": "mvp",
+     "to": "v1",
+     "kind": "dep",
+     "label": "daily loop works"
+    },
+    {
+     "from": "v1",
+     "to": "v2",
+     "kind": "dep",
+     "label": "live in stores"
+    }
+   ],
+   "flows": [
+    {
+     "id": "grow",
+     "label": "How does the app grow?",
+     "steps": [
+      {
+       "edge": "setup->mvp",
+       "label": "Setup hands MVP a running shell with auth and the catalog."
+      },
+      {
+       "edge": "mvp->v1",
+       "label": "MVP proves the daily loop; V1 adds week, grocery and pantry."
+      },
+      {
+       "edge": "v1->v2",
+       "label": "V1 ships publicly; V2 adds depth without migrating meals."
+      }
      ]
     }
    ]

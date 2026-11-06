@@ -37,13 +37,13 @@ Architecture: [ARCHITECTURE.md](ARCHITECTURE.md). Product: [PRD.md](PRD.md).
 
 ## Fonts
 
-Apply **only** via the `GAFont` enum. Do not hard-code `fontFamily` strings on widgets.
+Apply **only** via the `AppFont` enum. Do not hard-code `fontFamily` strings on widgets.
 
 ```dart
 Text(
   recipe.nameMr,
   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-    fontFamily: GAFont.primary.value, // example — match the real enum API
+    fontFamily: AppFont.primary.value, // example — match the real enum API
   ),
 );
 ```
@@ -198,7 +198,7 @@ Order, groups separated by a blank line:
 - Don't use force-unwrap (`!.`) — promote to a local and null-check, or `.firstOrNull`
 - Don't fetch the recipe catalog from Firestore on screens — use the in-memory catalog
 - Don't enable phone/SMS auth through V1
-- Don't apply fonts except through `GAFont`
+- Don't apply fonts except through `AppFont`
 - Don't log analytics from widgets, pages, BLoCs, or `design_system`
 
 ---
