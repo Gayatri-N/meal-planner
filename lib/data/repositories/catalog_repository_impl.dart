@@ -31,7 +31,10 @@ class CatalogRepositoryImpl implements CatalogRepository {
       final result = parseCatalog(jsonDecode(raw));
       final catalog = result.catalog;
       if (catalog == null) {
-        _logger.error('Invalid catalog: ${result.issues.join('; ')}');
+        _logger.error(
+          'Invalid catalog: ${result.issues.join('; ')}',
+          name: 'catalog',
+        );
         _loading = null;
         return const Failure(
           AppException(
@@ -42,6 +45,14 @@ class CatalogRepositoryImpl implements CatalogRepository {
       }
       return Success(catalog);
     } on Object catch (e, s) {
+      // TODO(crashlytics): also report through CrashHandler (non-fatal)
+      // once Crashlytics is connected in Setup S2.
+      _logger.error(
+        'Could not load $assetPath',
+        error: e,
+        stackTrace: s,
+        name: 'catalog',
+      );
       _loading = null;
       return Failure(
         AppException(

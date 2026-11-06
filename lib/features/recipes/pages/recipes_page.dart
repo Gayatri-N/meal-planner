@@ -34,14 +34,14 @@ class RecipesPage extends StatelessWidget {
     Recipe r,
     AppLocalizations l10n, {
     required bool mr,
-  }) => RecipeListItemData(
-    id: r.id,
-    title: mr ? r.nameMr : r.nameEn,
-    subtitle: mr ? r.nameEn : r.nameMr,
-    meta: [
-      l10n.recipeMinutes(r.totalMinutes),
-      r.mealTypes.map((t) => l10n.mealType(t.name)).join(' / '),
-    ].join(' · '),
-    badge: r.contentStatus == ContentStatus.draft ? l10n.recipeDraft : null,
-  );
+  }) {
+    final header = recipeHeader(r, l10n, marathi: mr);
+    return RecipeListItemData(
+      id: r.id,
+      title: header.title,
+      subtitle: header.subtitle,
+      meta: header.meta,
+      badge: header.badge,
+    );
+  }
 }

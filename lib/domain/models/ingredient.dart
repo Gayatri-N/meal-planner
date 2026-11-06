@@ -39,10 +39,6 @@ enum IngredientCategory {
   dairy,
   staples;
 
-  static IngredientCategory? tryParse(String value) {
-    for (final c in values) {
-      if (c.name == value) return c;
-    }
-    return null;
-  }
+  static IngredientCategory? tryParse(String value) =>
+      values.asNameMap()[value];
 }

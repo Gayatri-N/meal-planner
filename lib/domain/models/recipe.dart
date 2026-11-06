@@ -102,12 +102,7 @@ enum Diet {
   egg,
   nonVeg;
 
-  static Diet? tryParse(String value) {
-    for (final d in values) {
-      if (d.name == value) return d;
-    }
-    return null;
-  }
+  static Diet? tryParse(String value) => values.asNameMap()[value];
 }
 
 enum ContentStatus {
@@ -120,10 +115,5 @@ enum ContentStatus {
   /// Marathi reviewed and approved for release.
   reviewed;
 
-  static ContentStatus? tryParse(String value) {
-    for (final s in values) {
-      if (s.name == value) return s;
-    }
-    return null;
-  }
+  static ContentStatus? tryParse(String value) => values.asNameMap()[value];
 }

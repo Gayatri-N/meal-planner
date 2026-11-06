@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../core/helpers/app_exception.dart';
 import '../../../design_system/view_state.dart';
 import '../../../domain/use_cases/get_recipe_use_case.dart';
 
@@ -39,7 +40,7 @@ class RecipeDetailState extends Equatable {
     this.viewState = ViewState.loading,
     this.detail,
     this.servings = 0,
-    this.errorMessage,
+    this.errorKind,
   });
 
   final ViewState viewState;
@@ -48,15 +49,13 @@ class RecipeDetailState extends Equatable {
   /// Servings shown. Starts at the recipe's base servings; household
   /// size becomes the default once onboarding (M2) exists.
   final int servings;
-  final String? errorMessage;
+
+  /// Why loading failed; null unless [viewState] is error. Each new
+  /// state is built from scratch, so it never carries an old error.
+  final AppExceptionKind? errorKind;
 
   @override
-  List<Object?> get props => [
-    viewState,
-    detail?.recipe,
-    servings,
-    errorMessage,
-  ];
+  List<Object?> get props => [viewState, detail?.recipe, servings, errorKind];
 }
 
 @injectable
@@ -80,10 +79,8 @@ class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
           detail: detail,
           servings: detail.recipe.baseServings,
         ),
-        failure: (e) => RecipeDetailState(
-          viewState: ViewState.error,
-          errorMessage: e.message,
-        ),
+        failure: (e) =>
+            RecipeDetailState(viewState: ViewState.error, errorKind: e.kind),
       ),
     );
   }

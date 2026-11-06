@@ -10,6 +10,8 @@
   "recipesSearchHint": "शोधा: पोहे, pithla, बेसन…",
   "recipesEmpty": "या शोधाशी जुळणारी पाककृती नाही.",
   "recipesError": "पाककृती उघडता आल्या नाहीत.",
+  "recipeNotFound": "ही पाककृती उपलब्ध नाही.",
+  "aLittle": "थोडंसं",
   "recipeMinutes": "{minutes} मिनिटे",
   "recipeDraft": "मसुदा",
   "recipeServings": "किती जणांसाठी",

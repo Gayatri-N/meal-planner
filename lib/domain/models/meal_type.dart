@@ -7,10 +7,5 @@ enum MealType {
   eveningSnack,
   dinner;
 
-  static MealType? tryParse(String value) {
-    for (final type in values) {
-      if (type.name == value) return type;
-    }
-    return null;
-  }
+  static MealType? tryParse(String value) => values.asNameMap()[value];
 }

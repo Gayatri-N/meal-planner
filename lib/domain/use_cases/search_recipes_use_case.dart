@@ -16,6 +16,9 @@ class SearchRecipesUseCase {
   Future<Result<List<Recipe>>> call(String query) async {
     final result = await _catalog.load();
     return result.map((catalog) {
+      // TODO(release): hide ContentStatus.draft recipes in prod builds
+      // (AppConfig.isProd) before the first store release. Drafts are
+      // shown everywhere for now while the seed catalog is all drafts.
       final index = _index ??= RecipeSearchIndex(catalog);
       return index.search(query);
     });

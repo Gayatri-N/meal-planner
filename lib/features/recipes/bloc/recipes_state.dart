@@ -5,26 +5,30 @@ class RecipesState extends Equatable {
     this.viewState = ViewState.loading,
     this.query = '',
     this.recipes = const [],
-    this.errorMessage,
+    this.errorKind,
   });
 
   final ViewState viewState;
   final String query;
   final List<Recipe> recipes;
-  final String? errorMessage;
 
+  /// Why the last load failed; null unless [viewState] is error.
+  final AppExceptionKind? errorKind;
+
+  /// [errorKind] is not carried over: every new state starts without an
+  /// error unless one is passed in.
   RecipesState copyWith({
     ViewState? viewState,
     String? query,
     List<Recipe>? recipes,
-    String? errorMessage,
+    AppExceptionKind? errorKind,
   }) => RecipesState(
     viewState: viewState ?? this.viewState,
     query: query ?? this.query,
     recipes: recipes ?? this.recipes,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorKind: errorKind,
   );
 
   @override
-  List<Object?> get props => [viewState, query, recipes, errorMessage];
+  List<Object?> get props => [viewState, query, recipes, errorKind];
 }
