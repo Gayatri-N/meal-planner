@@ -4,58 +4,77 @@ import '../models/recipe.dart';
 /// In-memory recipe search over names, aliases and ingredient names
 /// (ARCHITECTURE.md §6). Tolerates case, hyphens, spacing, and small
 /// typos, so `Kanda-Poha`, `kandapoha` and `pithale` all match.
+///
+/// Every searchable form of every name is computed once here, so a
+/// keystroke only compares strings. Past ~500 recipes, add a trigram
+/// index to pick candidates and build it off the UI isolate.
 class RecipeSearchIndex {
   RecipeSearchIndex(Catalog catalog)
     : _entries = [
         for (final recipe in catalog.recipes.values)
           _Entry(
             recipe: recipe,
-            names: {
-              recipe.nameEn,
-              recipe.nameMr,
-              ...recipe.aliases,
-            }.map(normalize).where((s) => s.isNotEmpty).toSet(),
-            ingredientTerms: {
+            names: _terms([recipe.nameEn, recipe.nameMr, ...recipe.aliases]),
+            ingredientTerms: _terms([
               for (final line in recipe.ingredientLines)
                 if (catalog.ingredients[line.ingredientId] case final ing?) ...[
                   ing.nameEn,
                   ing.nameMr,
                   ...ing.aliases,
                 ],
-            }.map(normalize).where((s) => s.isNotEmpty).toSet(),
+            ]),
           ),
-      ];
+      ]..sort((a, b) => a.recipe.nameEn.compareTo(b.recipe.nameEn));
 
+  /// Sorted by English name, so ties and the empty query need no sort.
   final List<_Entry> _entries;
 
   /// Recipes matching [query], best first. An empty query returns
   /// every recipe sorted by English name.
   List<Recipe> search(String query) {
-    final q = normalize(query);
-    if (q.isEmpty) {
-      return _entries.map((e) => e.recipe).toList()
-        ..sort((a, b) => a.nameEn.compareTo(b.nameEn));
-    }
+    final q = _Term(normalize(query));
+    if (q.full.isEmpty) return [for (final e in _entries) e.recipe];
 
-    final scored = <(Recipe, int)>[];
-    for (final entry in _entries) {
+    // (recipe, score, position in English-name order)
+    final scored = <(Recipe, int, int)>[];
+    for (final (i, entry) in _entries.indexed) {
       final score = entry.score(q);
-      if (score > 0) scored.add((entry.recipe, score));
+      if (score > 0) scored.add((entry.recipe, score, i));
     }
     scored.sort((a, b) {
       final byScore = b.$2.compareTo(a.$2);
-      return byScore != 0 ? byScore : a.$1.nameEn.compareTo(b.$1.nameEn);
+      return byScore != 0 ? byScore : a.$3.compareTo(b.$3);
     });
-    return [for (final (recipe, _) in scored) recipe];
+    return [for (final (recipe, _, _) in scored) recipe];
   }
+
+  static final _punctuation = RegExp(r'[-_.,/()!?]+');
+  static final _whitespace = RegExp(r'\s+');
 
   /// Lowercase, hyphens/punctuation to spaces, collapsed whitespace.
   /// Devanagari letters and vowel signs are kept as they are.
   static String normalize(String input) => input
       .toLowerCase()
-      .replaceAll(RegExp(r'[-_.,/()!?]+'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll(_punctuation, ' ')
+      .replaceAll(_whitespace, ' ')
       .trim();
+
+  static List<_Term> _terms(Iterable<String> raw) =>
+      {for (final s in raw) normalize(s)}
+          .where((s) => s.isNotEmpty)
+          .map(_Term.new)
+          .toList(growable: false);
+}
+
+/// A normalized string with its precomputed search forms.
+class _Term {
+  _Term(this.full)
+    : compact = full.replaceAll(' ', ''),
+      words = full.split(' ');
+
+  final String full;
+  final String compact;
+  final List<String> words;
 }
 
 class _Entry {
@@ -66,40 +85,34 @@ class _Entry {
   });
 
   final Recipe recipe;
-  final Set<String> names;
-  final Set<String> ingredientTerms;
+  final List<_Term> names;
+  final List<_Term> ingredientTerms;
 
-  int score(String q) {
-    final compactQ = _compact(q);
+  int score(_Term q) {
     var best = 0;
-
     for (final name in names) {
-      final compact = _compact(name);
-      if (name == q || compact == compactQ) return 100;
-      if (name.startsWith(q) || compact.startsWith(compactQ)) {
-        best = _max(best, 80);
-      } else if (_words(name).any((w) => w.startsWith(q))) {
-        best = _max(best, 70);
-      } else if (compact.contains(compactQ)) {
-        best = _max(best, 60);
-      } else if (_isCloseTypo(compactQ, compact) ||
-          _words(name).any((w) => _isCloseTypo(q, w))) {
-        best = _max(best, 50);
+      if (name.full == q.full || name.compact == q.compact) return 100;
+      if (name.full.startsWith(q.full) || name.compact.startsWith(q.compact)) {
+        if (best < 80) best = 80;
+      } else if (name.words.any((w) => w.startsWith(q.full))) {
+        if (best < 70) best = 70;
+      } else if (name.compact.contains(q.compact)) {
+        if (best < 60) best = 60;
+      } else if (best < 50 &&
+          (_isCloseTypo(q.compact, name.compact) ||
+              name.words.any((w) => _isCloseTypo(q.full, w)))) {
+        best = 50;
       }
     }
     if (best > 0) return best;
 
     for (final term in ingredientTerms) {
-      if (term == q || _words(term).any((w) => w.startsWith(q))) {
-        best = _max(best, 30);
+      if (term.full == q.full || term.words.any((w) => w.startsWith(q.full))) {
+        return 30;
       }
     }
-    return best;
+    return 0;
   }
-
-  static String _compact(String s) => s.replaceAll(' ', '');
-  static Iterable<String> _words(String s) => s.split(' ');
-  static int _max(int a, int b) => a > b ? a : b;
 
   /// One edit for short words, two for longer ones. Needs 4+ characters
   /// so short queries do not match everything.
@@ -110,23 +123,28 @@ class _Entry {
     return _editDistance(query, target, allowed) <= allowed;
   }
 
-  /// Levenshtein distance, stopping early once it exceeds [limit].
+  /// Levenshtein distance with two reused rows, stopping early once
+  /// every cell in a row exceeds [limit].
   static int _editDistance(String a, String b, int limit) {
     var prev = List<int>.generate(b.length + 1, (i) => i);
+    var curr = List<int>.filled(b.length + 1, 0);
     for (var i = 1; i <= a.length; i++) {
-      final curr = List<int>.filled(b.length + 1, 0)..[0] = i;
-      var rowMin = curr[0];
+      curr[0] = i;
+      var rowMin = i;
+      final ca = a.codeUnitAt(i - 1);
       for (var j = 1; j <= b.length; j++) {
-        final cost = a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1) ? 0 : 1;
-        curr[j] = [
-          prev[j] + 1,
-          curr[j - 1] + 1,
-          prev[j - 1] + cost,
-        ].reduce((x, y) => x < y ? x : y);
-        if (curr[j] < rowMin) rowMin = curr[j];
+        final substitute = prev[j - 1] + (ca == b.codeUnitAt(j - 1) ? 0 : 1);
+        final delete = prev[j] + 1;
+        final insert = curr[j - 1] + 1;
+        var v = substitute < delete ? substitute : delete;
+        if (insert < v) v = insert;
+        curr[j] = v;
+        if (v < rowMin) rowMin = v;
       }
       if (rowMin > limit) return limit + 1;
+      final swap = prev;
       prev = curr;
+      curr = swap;
     }
     return prev[b.length];
   }

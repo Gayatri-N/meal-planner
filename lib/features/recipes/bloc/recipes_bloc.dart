@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/helpers/app_exception.dart';
+import '../../../core/helpers/debounce.dart';
 import '../../../design_system/view_state.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../domain/use_cases/search_recipes_use_case.dart';
@@ -14,8 +15,14 @@ part 'recipes_state.dart';
 class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
   RecipesBloc(this._search) : super(const RecipesState()) {
     on<RecipesStarted>((event, emit) => _run('', emit));
-    on<RecipesQueryChanged>((event, emit) => _run(event.query, emit));
+    on<RecipesQueryChanged>(
+      (event, emit) => _run(event.query, emit),
+      transformer: debounce(searchDebounce),
+    );
   }
+
+  /// Pause after the last keystroke before searching.
+  static const searchDebounce = Duration(milliseconds: 150);
 
   final SearchRecipesUseCase _search;
 

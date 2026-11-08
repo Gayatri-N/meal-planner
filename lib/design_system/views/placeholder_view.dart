@@ -20,8 +20,10 @@ class PlaceholderView extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(title)),
+      // Scrolls when large text or a small screen makes it taller than
+      // the space available, instead of overflowing.
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,

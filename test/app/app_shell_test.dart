@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealplanner/app/app.dart';
 import 'package:mealplanner/app/di/di.dart';
 import 'package:mealplanner/core/env/app_config.dart';
+import 'package:mealplanner/features/recipes/bloc/recipes_bloc.dart';
 
 import '../helpers/test_app.dart';
 
@@ -40,6 +41,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(SearchBar), 'pithale');
+      await tester.pump(RecipesBloc.searchDebounce * 2);
       await tester.pumpAndSettle();
       expect(find.text('Pithla'), findsOneWidget);
       expect(find.text('Kanda Poha'), findsNothing);

@@ -180,9 +180,13 @@ class _IngredientRow extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
+      // Name takes 60%, amount up to 40%; both wrap rather than overflow
+      // (Marathi units like "½ मोठा चमचा" get wide at large text sizes).
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
+            flex: 3,
             child: Text.rich(
               TextSpan(
                 text: row.name,
@@ -199,10 +203,15 @@ class _IngredientRow extends StatelessWidget {
               style: theme.textTheme.bodyLarge,
             ),
           ),
-          Text(
-            row.amount,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            flex: 2,
+            child: Text(
+              row.amount,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

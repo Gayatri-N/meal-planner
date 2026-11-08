@@ -54,6 +54,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         bloc.add(const RecipesQueryChanged('poha'));
       },
+      wait: RecipesBloc.searchDebounce * 2,
       skip: 1, // initial query echo
       expect: () => [
         const RecipesState(

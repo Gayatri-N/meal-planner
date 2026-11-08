@@ -12,9 +12,14 @@ class DebugCrashHandler implements CrashHandler {
   final Logger _logger;
 
   @override
-  void recordError(Object error, StackTrace? stackTrace, {bool fatal = false}) {
+  void recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    bool fatal = false,
+    String? reason,
+  }) {
     _logger.error(
-      fatal ? 'Fatal error' : 'Error',
+      [fatal ? 'Fatal error' : 'Non-fatal error', ?reason].join(': '),
       error: error,
       stackTrace: stackTrace,
       name: 'crash',
