@@ -27,7 +27,11 @@ class CatalogRepositoryImpl implements CatalogRepository {
 
   Future<Result<Catalog>> _load() async {
     try {
-      final raw = await _bundle.loadString(assetPath);
+      // cache: false — this repository keeps the parsed catalog; the
+      // bundle need not also keep the raw JSON string for the app's life.
+      // TODO(perf): parse in Isolate.run once the catalog passes ~500
+      // recipes (see RecipeSearchIndex).
+      final raw = await _bundle.loadString(assetPath, cache: false);
       final result = parseCatalog(jsonDecode(raw));
       final catalog = result.catalog;
       if (catalog == null) {

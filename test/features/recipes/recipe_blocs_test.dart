@@ -4,17 +4,20 @@ import 'package:mealplanner/core/helpers/app_exception.dart';
 import 'package:mealplanner/core/helpers/result.dart';
 import 'package:mealplanner/design_system/view_state.dart';
 import 'package:mealplanner/domain/models/catalog.dart';
+import 'package:mealplanner/domain/models/meal_type.dart';
+import 'package:mealplanner/domain/models/recipe.dart';
 import 'package:mealplanner/domain/repositories/catalog_repository.dart';
 import 'package:mealplanner/domain/use_cases/get_recipe_use_case.dart';
 import 'package:mealplanner/domain/use_cases/search_recipes_use_case.dart';
 import 'package:mealplanner/features/recipes/bloc/recipe_detail_bloc.dart';
 import 'package:mealplanner/features/recipes/bloc/recipes_bloc.dart';
 
-/// Fails the first [failures] loads, then returns an empty catalog.
+/// Fails the first [failures] loads, then returns [recipes].
 class _FakeCatalogRepository implements CatalogRepository {
-  _FakeCatalogRepository({this.failures = 0});
+  _FakeCatalogRepository({this.failures = 0, this.recipes = const []});
 
   int failures;
+  final List<Recipe> recipes;
 
   @override
   Future<Result<Catalog>> load() async {
@@ -24,9 +27,28 @@ class _FakeCatalogRepository implements CatalogRepository {
         AppException(kind: AppExceptionKind.invalidData, message: 'broken'),
       );
     }
-    return Success(Catalog(version: 1, ingredients: [], recipes: []));
+    return Success(Catalog(version: 1, ingredients: [], recipes: recipes));
   }
 }
+
+Recipe _recipe({required String id, required int baseServings}) => Recipe(
+  id: id,
+  nameEn: 'Festival batch',
+  nameMr: 'सणाचा बेत',
+  aliases: const [],
+  mealTypes: const [MealType.lunch],
+  diet: Diet.veg,
+  baseServings: baseServings,
+  prepMinutes: 0,
+  cookMinutes: 0,
+  regionIds: const ['pune'],
+  seasonTags: const [],
+  festivalTags: const [],
+  occasionTags: const [],
+  ingredientLines: const [],
+  steps: const [],
+  contentStatus: ContentStatus.draft,
+);
 
 void main() {
   group('RecipeDetailBloc', () {
@@ -41,11 +63,24 @@ void main() {
         ),
       ],
     );
+
+    blocTest<RecipeDetailBloc, RecipeDetailState>(
+      'starts servings within the stepper range',
+      build: () => RecipeDetailBloc(
+        GetRecipeUseCase(
+          _FakeCatalogRepository(
+            recipes: [_recipe(id: 'big', baseServings: 25)],
+          ),
+        ),
+      ),
+      act: (bloc) => bloc.add(const RecipeDetailStarted('big')),
+      verify: (bloc) => expect(bloc.state.servings, maxServings),
+    );
   });
 
   group('RecipesBloc', () {
     blocTest<RecipesBloc, RecipesState>(
-      'clears the error once a later search succeeds',
+      'shows loading while retrying after an error, then clears the error',
       build: () => RecipesBloc(
         SearchRecipesUseCase(_FakeCatalogRepository(failures: 1)),
       ),
@@ -61,7 +96,7 @@ void main() {
           viewState: ViewState.error,
           errorKind: AppExceptionKind.invalidData,
         ),
-        const RecipesState(viewState: ViewState.error, query: 'poha'),
+        const RecipesState(viewState: ViewState.loading, query: 'poha'),
         const RecipesState(viewState: ViewState.empty, query: 'poha'),
       ],
     );

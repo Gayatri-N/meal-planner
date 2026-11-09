@@ -69,5 +69,23 @@ void main() {
     test('short queries do not fuzzy-match everything', () {
       expect(index.search('xyz'), isEmpty);
     });
+
+    test('1–2 letters match name starts only, not the middle', () {
+      // 'nd' is inside "kanda" but starts no word.
+      expect(index.search('nd'), isEmpty);
+      // 'a' starts no recipe word, and is too short for ingredients
+      // ("asafoetida" in Varan).
+      expect(index.search('a'), isEmpty);
+      // Word starts still work from one letter (Varan via "plain dal").
+      expect(index.search('p').map((r) => r.id), [
+        'kanda_poha',
+        'pithla',
+        'varan',
+      ]);
+    });
+
+    test('3+ letters match inside names', () {
+      expect(index.search('and').map((r) => r.id), ['kanda_poha']);
+    });
   });
 }

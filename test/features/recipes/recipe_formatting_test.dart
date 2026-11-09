@@ -36,11 +36,33 @@ void main() {
       expect(formatAmount(1, 'pinch', mr), '1 चिमूट');
     });
 
-    test('shows "a little" instead of rounding a tiny amount to 0', () {
+    test('switches small amounts to a smaller unit', () {
+      // 0.25 kg for 4, scaled to 1 serving.
+      expect(formatAmount(0.0625, 'kg', en), '63 g');
+      expect(formatAmount(0.0625, 'l', en), '63 ml');
+      expect(formatAmount(1.5, 'kg', en), '1½ kg');
+      // 0.08 cup ≈ 1.3 tbsp; 0.3 tbsp = 0.9 tsp.
+      expect(formatAmount(0.08, 'cup', en), '1.3 tbsp');
+      expect(formatAmount(0.3, 'tbsp', en), '0.9 tsp');
+    });
+
+    test('shows "a little" only when even the smaller unit rounds to 0', () {
       // ¼ tsp in a 6-serving recipe, viewed for 1 serving.
       final tiny = 0.25 * 1 / 6;
       expect(formatAmount(tiny, 'tsp', en), 'a little');
       expect(formatAmount(tiny, 'tsp', mr), 'थोडंसं');
+      expect(formatAmount(0.0004, 'kg', en), 'a little'); // 0.4 g
+    });
+
+    test('uses singular up to 1 and plural above', () {
+      expect(formatAmount(0.5, 'clove', en), '½ clove');
+      expect(formatAmount(1, 'clove', en), '1 clove');
+      expect(formatAmount(1.5, 'clove', en), '1½ cloves');
+      expect(formatAmount(2, 'sprig', en), '2 sprigs');
+      expect(formatAmount(2, 'cup', en), '2 cups');
+      expect(formatAmount(1, 'clove', mr), '1 पाकळी');
+      expect(formatAmount(4, 'clove', mr), '4 पाकळ्या');
+      expect(formatAmount(2, 'tsp', mr), '2 छोटे चमचे');
     });
 
     test('to_taste ignores the quantity', () {

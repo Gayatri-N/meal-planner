@@ -88,6 +88,11 @@ class _Entry {
   final List<_Term> names;
   final List<_Term> ingredientTerms;
 
+  /// Shortest query matched anywhere inside a name, or against
+  /// ingredients. Shorter queries match name/word starts only, so `a`
+  /// does not return every recipe containing an "a".
+  static const _minInfixLength = 3;
+
   int score(_Term q) {
     var best = 0;
     for (final name in names) {
@@ -96,7 +101,8 @@ class _Entry {
         if (best < 80) best = 80;
       } else if (name.words.any((w) => w.startsWith(q.full))) {
         if (best < 70) best = 70;
-      } else if (name.compact.contains(q.compact)) {
+      } else if (q.compact.length >= _minInfixLength &&
+          name.compact.contains(q.compact)) {
         if (best < 60) best = 60;
       } else if (best < 50 &&
           (_isCloseTypo(q.compact, name.compact) ||
@@ -104,7 +110,7 @@ class _Entry {
         best = 50;
       }
     }
-    if (best > 0) return best;
+    if (best > 0 || q.compact.length < _minInfixLength) return best;
 
     for (final term in ingredientTerms) {
       if (term.full == q.full || term.words.any((w) => w.startsWith(q.full))) {

@@ -30,19 +30,54 @@ RecipeHeaderText recipeHeader(
   badge: recipe.contentStatus == ContentStatus.draft ? l10n.recipeDraft : null,
 );
 
-/// Below this, a scaled amount is shown as "a little" instead of a
-/// number that would round to 0.
+/// Below this (after switching to a smaller unit where one exists), an
+/// amount is shown as "a little" instead of a number that rounds to 0.
 const smallestShownQuantity = 0.1;
 
-/// `1.5 tbsp` → `1½ tbsp`, `0.25 tsp` → `¼ tsp`, salt → `to taste`,
-/// `0.04 tsp` → `a little`.
+/// `1.5 tbsp` → `1½ tbsp`, `0.0625 kg` → `63 g`, `4 clove` → `4 cloves`,
+/// salt → `to taste`, `0.04 tsp` → `a little`.
 String formatAmount(double? qty, String unit, AppLocalizations l10n) {
   if (unit == toTasteUnit || qty == null) return l10n.toTaste;
-  if (qty < smallestShownQuantity) return l10n.aLittle;
-  final label = l10n.unitLabel(unit);
-  final number = formatQuantity(qty);
-  if (label == '?') return '$number $unit';
+  final (value, readableUnit) = readableAmount(qty, unit);
+  final tooSmall = switch (readableUnit) {
+    'g' || 'ml' => value < 1,
+    _ => value < smallestShownQuantity,
+  };
+  if (tooSmall) return l10n.aLittle;
+  final number = formatQuantity(value);
+  final label = unitLabel(readableUnit, value, l10n);
   return label.isEmpty ? number : '$number $label';
+}
+
+/// Moves small amounts to a smaller unit so they stay readable:
+/// 0.0625 kg → 62.5 g, 0.08 cup → 1.28 tbsp, 0.3 tbsp → 0.9 tsp.
+(double, String) readableAmount(double qty, String unit) => switch (unit) {
+  'kg' when qty < 1 => (qty * 1000, 'g'),
+  'l' when qty < 1 => (qty * 1000, 'ml'),
+  'cup' when qty < 0.25 => readableAmount(qty * 16, 'tbsp'),
+  'tbsp' when qty < 0.5 => (qty * 3, 'tsp'),
+  _ => (qty, unit),
+};
+
+/// Localized unit after a quantity; empty for pieces ("2 onions" → "2").
+/// Singular up to 1 ("½ clove", "1 clove"), plural above ("1½ cloves").
+String unitLabel(String unit, double qty, AppLocalizations l10n) {
+  final count = qty > 1 ? 2 : 1;
+  return switch (unit) {
+    'pc' => '',
+    'g' => l10n.unitG,
+    'kg' => l10n.unitKg,
+    'ml' => l10n.unitMl,
+    'l' => l10n.unitL,
+    'tsp' => l10n.unitTsp(count),
+    'tbsp' => l10n.unitTbsp(count),
+    'cup' => l10n.unitCup(count),
+    'sprig' => l10n.unitSprig(count),
+    'pinch' => l10n.unitPinch(count),
+    'clove' => l10n.unitClove(count),
+    'bunch' => l10n.unitBunch(count),
+    _ => unit,
+  };
 }
 
 const _fractions = [

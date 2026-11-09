@@ -3,6 +3,7 @@ import '../../domain/models/ingredient.dart';
 import '../../domain/models/meal_type.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/models/region.dart';
+import '../../domain/models/servings.dart';
 
 /// Result of reading `catalog.json`. [catalog] is null when [issues]
 /// is not empty: a catalog with problems is never handed to the app.
@@ -169,7 +170,15 @@ class _Parser {
       aliases: _strList(json, 'aliases', path, required: false),
       mealTypes: mealTypes,
       diet: diet ?? Diet.veg,
-      baseServings: _int(json, 'baseServings', path, min: 1) ?? 1,
+      baseServings:
+          _int(
+            json,
+            'baseServings',
+            path,
+            min: minServings,
+            max: maxServings,
+          ) ??
+          minServings,
       prepMinutes: _int(json, 'prepMinutes', path, min: 0) ?? 0,
       cookMinutes: _int(json, 'cookMinutes', path, min: 0) ?? 0,
       regionIds: regionIds,
@@ -262,10 +271,16 @@ class _Parser {
     String key,
     String path, {
     required int min,
+    int? max,
   }) {
     final v = json[key];
-    if (v is int && v >= min) return v;
-    _issue('$path.$key', 'must be an integer >= $min');
+    if (v is int && v >= min && (max == null || v <= max)) return v;
+    _issue(
+      '$path.$key',
+      max == null
+          ? 'must be an integer >= $min'
+          : 'must be an integer from $min to $max',
+    );
     return null;
   }
 

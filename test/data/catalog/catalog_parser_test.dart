@@ -154,6 +154,14 @@ void main() {
       );
     });
 
+    test('rejects baseServings outside the servings range', () {
+      final recipe = _recipe()..['baseServings'] = 25;
+      final result = parseCatalog(_catalog(recipes: [recipe]));
+
+      expect(result.issues.single, contains('baseServings'));
+      expect(result.issues.single, contains('from 1 to 20'));
+    });
+
     test('collects every problem, not just the first', () {
       final result = parseCatalog({
         'catalogVersion': 0,

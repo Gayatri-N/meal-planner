@@ -17,7 +17,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
     on<RecipesStarted>((event, emit) => _run('', emit));
     on<RecipesQueryChanged>(
       (event, emit) => _run(event.query, emit),
-      transformer: debounce(searchDebounce),
+      transformer: debounceRestartable(searchDebounce),
     );
   }
 
@@ -27,9 +27,18 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
   final SearchRecipesUseCase _search;
 
   Future<void> _run(String query, Emitter<RecipesState> emit) async {
-    emit(state.copyWith(query: query));
+    emit(
+      state.copyWith(
+        query: query,
+        // Retrying after a failure: show progress, not the old error.
+        viewState: state.viewState == ViewState.error
+            ? ViewState.loading
+            : null,
+      ),
+    );
     final result = await _search(query);
-    // A newer query may have arrived while this one ran.
+    // Stale query searches are cancelled by the transformer; this guards
+    // the initial load (RecipesStarted) finishing after a typed query.
     if (state.query != query) return;
     emit(
       result.when(

@@ -20,7 +20,17 @@
   "recipeOptional": "ऐच्छिक",
   "toTaste": "चवीनुसार",
   "mealType": "{type, select, breakfast{नाश्ता} morningSnack{सकाळचा खाऊ} lunch{दुपारचं जेवण} eveningSnack{संध्याकाळचा खाऊ} dinner{रात्रीचं जेवण} other{}}",
-  "unitLabel": "{unit, select, g{ग्रॅ} kg{किलो} ml{मिली} l{लि} tsp{छोटा चमचा} tbsp{मोठा चमचा} cup{वाटी} pc{} sprig{काडी} pinch{चिमूट} clove{पाकळ्या} bunch{जुडी} other{?}}",
+  "unitG": "ग्रॅ",
+  "unitKg": "किलो",
+  "unitMl": "मिली",
+  "unitL": "लिटर",
+  "unitTsp": "{count, plural, =1{छोटा चमचा} other{छोटे चमचे}}",
+  "unitTbsp": "{count, plural, =1{मोठा चमचा} other{मोठे चमचे}}",
+  "unitCup": "{count, plural, =1{वाटी} other{वाट्या}}",
+  "unitSprig": "{count, plural, =1{काडी} other{काड्या}}",
+  "unitPinch": "{count, plural, =1{चिमूट} other{चिमूट}}",
+  "unitClove": "{count, plural, =1{पाकळी} other{पाकळ्या}}",
+  "unitBunch": "{count, plural, =1{जुडी} other{जुड्या}}",
   "trackTitle": "नोंद",
   "trackPlaceholder": "तुम्ही काय खाल्लं याची नोंद इथे दिसेल."
 }

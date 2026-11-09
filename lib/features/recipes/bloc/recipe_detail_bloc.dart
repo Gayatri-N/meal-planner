@@ -4,11 +4,10 @@ import 'package:injectable/injectable.dart';
 
 import '../../../core/helpers/app_exception.dart';
 import '../../../design_system/view_state.dart';
+import '../../../domain/models/servings.dart';
 import '../../../domain/use_cases/get_recipe_use_case.dart';
 
-/// Servings range offered by the stepper.
-const minServings = 1;
-const maxServings = 20;
+export '../../../domain/models/servings.dart' show maxServings, minServings;
 
 sealed class RecipeDetailEvent extends Equatable {
   const RecipeDetailEvent();
@@ -77,7 +76,7 @@ class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
         success: (detail) => RecipeDetailState(
           viewState: ViewState.content,
           detail: detail,
-          servings: detail.recipe.baseServings,
+          servings: detail.recipe.baseServings.clamp(minServings, maxServings),
         ),
         failure: (e) =>
             RecipeDetailState(viewState: ViewState.error, errorKind: e.kind),

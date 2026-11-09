@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 import '../core/logger/logger.dart';
@@ -18,11 +19,16 @@ class DebugCrashHandler implements CrashHandler {
     bool fatal = false,
     String? reason,
   }) {
-    _logger.error(
-      [fatal ? 'Fatal error' : 'Non-fatal error', ?reason].join(': '),
-      error: error,
-      stackTrace: stackTrace,
-      name: 'crash',
-    );
+    final title = [
+      fatal ? 'Fatal error' : 'Non-fatal error',
+      ?reason,
+    ].join(': ');
+    _logger.error(title, error: error, stackTrace: stackTrace, name: 'crash');
+    // bootstrap's PlatformDispatcher.onError returns true, which stops
+    // Flutter printing uncaught errors itself. Print them here so they
+    // still show up in the `flutter run` terminal, not only in DevTools.
+    if (fatal && kDebugMode) {
+      debugPrint('[$title] $error\n$stackTrace');
+    }
   }
 }
