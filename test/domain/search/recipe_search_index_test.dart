@@ -84,6 +84,21 @@ void main() {
       ]);
     });
 
+    test('multi-word partial ingredient query matches', () {
+      expect(index.search('green chil').map((r) => r.id), [
+        'kanda_poha',
+        'pithla',
+      ]);
+    });
+
+    test('zero-width joiners are ignored', () {
+      expect(
+        RecipeSearchIndex.normalize('र्‍या'),
+        RecipeSearchIndex.normalize('र्या'),
+      );
+      expect(top('पि‌ठलं'), 'pithla');
+    });
+
     test('3+ letters match inside names', () {
       expect(index.search('and').map((r) => r.id), ['kanda_poha']);
     });

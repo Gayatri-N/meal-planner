@@ -51,10 +51,17 @@ class RecipeSearchIndex {
   static final _punctuation = RegExp(r'[-_.,/()!?]+');
   static final _whitespace = RegExp(r'\s+');
 
-  /// Lowercase, hyphens/punctuation to spaces, collapsed whitespace.
-  /// Devanagari letters and vowel signs are kept as they are.
+  /// Zero-width non-joiner/joiner (U+200C/U+200D). Marathi text uses
+  /// them for some conjunct shapes (eyelash ra), but keyboards often omit
+  /// them, so `र्‍या` and `र्या` must match.
+  static final _zeroWidthJoiners = RegExp('[‌‍]');
+
+  /// Lowercase, hyphens/punctuation to spaces, collapsed whitespace,
+  /// zero-width joiners removed. Devanagari letters and vowel signs are
+  /// kept as they are.
   static String normalize(String input) => input
       .toLowerCase()
+      .replaceAll(_zeroWidthJoiners, '')
       .replaceAll(_punctuation, ' ')
       .replaceAll(_whitespace, ' ')
       .trim();
@@ -113,7 +120,11 @@ class _Entry {
     if (best > 0 || q.compact.length < _minInfixLength) return best;
 
     for (final term in ingredientTerms) {
-      if (term.full == q.full || term.words.any((w) => w.startsWith(q.full))) {
+      // Whole term or any word: "green chil" and "chil" both find
+      // "green chilli".
+      if (term.full.startsWith(q.full) ||
+          term.compact.startsWith(q.compact) ||
+          term.words.any((w) => w.startsWith(q.full))) {
         return 30;
       }
     }

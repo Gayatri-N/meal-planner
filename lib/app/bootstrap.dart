@@ -27,13 +27,14 @@ void bootstrap(AppEnvironment environment) {
       // non-fatal: reported with context, not counted as crashes.
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
+        final reason = [
+          ?details.library,
+          ?details.context?.toDescription(),
+        ].join(' — ');
         crash.recordError(
           details.exception,
           details.stack,
-          reason: [
-            ?details.library,
-            ?details.context?.toDescription(),
-          ].join(' — '),
+          reason: reason.isEmpty ? null : reason,
         );
       };
 

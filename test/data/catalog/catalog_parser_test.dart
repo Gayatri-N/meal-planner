@@ -162,6 +162,15 @@ void main() {
       expect(result.issues.single, contains('from 1 to 20'));
     });
 
+    test('a missing steps list is reported once', () {
+      final recipe = _recipe()..remove('steps');
+      final result = parseCatalog(_catalog(recipes: [recipe]));
+
+      expect(result.issues, [
+        r'$.recipes[0].steps: must be a list with at least one item',
+      ]);
+    });
+
     test('collects every problem, not just the first', () {
       final result = parseCatalog({
         'catalogVersion': 0,

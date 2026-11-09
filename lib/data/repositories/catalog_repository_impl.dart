@@ -22,8 +22,20 @@ class CatalogRepositoryImpl implements CatalogRepository {
   final Logger _logger;
   Future<Result<Catalog>>? _loading;
 
+  /// Caches a successful load. A failure is forgotten once it completes,
+  /// so the next call retries. (Cleared here rather than inside [_load]:
+  /// if [_load] failed synchronously, clearing there would run before
+  /// `??=` stores the future, and the failure would stay cached.)
   @override
-  Future<Result<Catalog>> load() => _loading ??= _load();
+  Future<Result<Catalog>> load() {
+    final loading = _loading ??= _load();
+    return loading.then((result) {
+      if (result is Failure<Catalog> && identical(_loading, loading)) {
+        _loading = null;
+      }
+      return result;
+    });
+  }
 
   Future<Result<Catalog>> _load() async {
     try {
@@ -39,7 +51,6 @@ class CatalogRepositoryImpl implements CatalogRepository {
           'Invalid catalog: ${result.issues.join('; ')}',
           name: 'catalog',
         );
-        _loading = null;
         return const Failure(
           AppException(
             kind: AppExceptionKind.invalidData,
@@ -57,7 +68,6 @@ class CatalogRepositoryImpl implements CatalogRepository {
         stackTrace: s,
         name: 'catalog',
       );
-      _loading = null;
       return Failure(
         AppException(
           kind: AppExceptionKind.invalidData,

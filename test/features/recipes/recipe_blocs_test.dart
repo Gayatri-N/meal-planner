@@ -76,6 +76,26 @@ void main() {
       act: (bloc) => bloc.add(const RecipeDetailStarted('big')),
       verify: (bloc) => expect(bloc.state.servings, maxServings),
     );
+
+    blocTest<RecipeDetailBloc, RecipeDetailState>(
+      'quick repeated taps each add a serving',
+      build: () => RecipeDetailBloc(
+        GetRecipeUseCase(
+          _FakeCatalogRepository(
+            recipes: [_recipe(id: 'two', baseServings: 2)],
+          ),
+        ),
+      ),
+      act: (bloc) async {
+        bloc.add(const RecipeDetailStarted('two'));
+        await Future<void>.delayed(Duration.zero);
+        // Added back to back, before either is handled.
+        bloc
+          ..add(const RecipeServingsStepped(1))
+          ..add(const RecipeServingsStepped(1));
+      },
+      verify: (bloc) => expect(bloc.state.servings, 4),
+    );
   });
 
   group('RecipesBloc', () {

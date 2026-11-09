@@ -132,10 +132,7 @@ class _Parser {
     if (regionIds.isEmpty) _issue('$path.regionIds', 'needs at least one');
 
     final lines = <RecipeIngredientLine>[];
-    final linesJson = _list(json, 'ingredientLines', path);
-    if (linesJson.isEmpty) {
-      _issue('$path.ingredientLines', 'needs at least one');
-    }
+    final linesJson = _nonEmptyList(json, 'ingredientLines', path);
     for (var i = 0; i < linesJson.length; i++) {
       final line = _line(
         linesJson[i],
@@ -146,8 +143,7 @@ class _Parser {
     }
 
     final steps = <RecipeStep>[];
-    final stepsJson = _list(json, 'steps', path);
-    if (stepsJson.isEmpty) _issue('$path.steps', 'needs at least one');
+    final stepsJson = _nonEmptyList(json, 'steps', path);
     for (var i = 0; i < stepsJson.length; i++) {
       final s = stepsJson[i];
       final sp = '$path.steps[$i]';
@@ -288,6 +284,19 @@ class _Parser {
     final v = json[key];
     if (v is List<Object?>) return v;
     _issue('$path.$key', 'must be a list');
+    return const [];
+  }
+
+  /// Like [_list], but also requires an item. Missing, not a list, or
+  /// empty each give one message, not two.
+  List<Object?> _nonEmptyList(
+    Map<String, Object?> json,
+    String key,
+    String path,
+  ) {
+    final v = json[key];
+    if (v is List<Object?> && v.isNotEmpty) return v;
+    _issue('$path.$key', 'must be a list with at least one item');
     return const [];
   }
 

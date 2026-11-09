@@ -44,8 +44,9 @@ String formatAmount(double? qty, String unit, AppLocalizations l10n) {
     _ => value < smallestShownQuantity,
   };
   if (tooSmall) return l10n.aLittle;
-  final number = formatQuantity(value);
-  final label = unitLabel(readableUnit, value, l10n);
+  final (shown, number) = _display(value);
+  // Plural follows the number on screen: 1.04 shows as "1", so "1 cup".
+  final label = unitLabel(readableUnit, shown, l10n);
   return label.isEmpty ? number : '$number $label';
 }
 
@@ -94,19 +95,31 @@ const _fractionTolerance = 0.01;
 
 /// Formats [qty] for display. Expects `qty >= smallestShownQuantity`;
 /// smaller values are handled by [formatAmount].
-String formatQuantity(double qty) {
-  if (qty >= 10) return qty.round().toString();
+String formatQuantity(double qty) => _display(qty).$2;
+
+/// The rounded value shown and its text: 1.04 → (1, "1"),
+/// 1.5 → (1.5, "1½"), 22.5 → (23, "23").
+(double, String) _display(double qty) {
+  if (qty >= 10) {
+    final n = qty.round();
+    return (n.toDouble(), '$n');
+  }
   final whole = qty.floor();
   final frac = qty - whole;
-  if (frac < _fractionTolerance) return '$whole';
-  if (frac > 1 - _fractionTolerance) return '${whole + 1}';
+  if (frac < _fractionTolerance) return (whole.toDouble(), '$whole');
+  if (frac > 1 - _fractionTolerance) {
+    return ((whole + 1).toDouble(), '${whole + 1}');
+  }
   for (final (value, glyph) in _fractions) {
     if ((frac - value).abs() < _fractionTolerance) {
-      return whole == 0 ? glyph : '$whole$glyph';
+      return (whole + value, whole == 0 ? glyph : '$whole$glyph');
     }
   }
   final rounded = (qty * 10).round() / 10;
-  return rounded == rounded.roundToDouble()
-      ? rounded.toInt().toString()
-      : rounded.toString();
+  return (
+    rounded,
+    rounded == rounded.roundToDouble()
+        ? rounded.toInt().toString()
+        : rounded.toString(),
+  );
 }

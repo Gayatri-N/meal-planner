@@ -35,10 +35,8 @@ class RecipeDetailPage extends StatelessWidget {
         final bloc = context.read<RecipeDetailBloc>();
         return RecipeDetailView(
           data: _data(context, detail.recipe, detail.ingredients, state),
-          onDecreaseServings: () =>
-              bloc.add(RecipeServingsChanged(state.servings - 1)),
-          onIncreaseServings: () =>
-              bloc.add(RecipeServingsChanged(state.servings + 1)),
+          onDecreaseServings: () => bloc.add(const RecipeServingsStepped(-1)),
+          onIncreaseServings: () => bloc.add(const RecipeServingsStepped(1)),
         );
       },
     );

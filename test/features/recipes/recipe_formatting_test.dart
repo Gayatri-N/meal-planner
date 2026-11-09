@@ -65,6 +65,13 @@ void main() {
       expect(formatAmount(2, 'tsp', mr), '2 छोटे चमचे');
     });
 
+    test('plural follows the rounded number shown', () {
+      // 1.3 cup for 5, scaled to 4 = 1.04 → shown as "1".
+      expect(formatAmount(1.04, 'cup', en), '1 cup');
+      expect(formatAmount(1.04, 'cup', mr), '1 वाटी');
+      expect(formatAmount(1.2, 'cup', en), '1.2 cups');
+    });
+
     test('to_taste ignores the quantity', () {
       expect(formatAmount(null, 'to_taste', en), 'to taste');
     });

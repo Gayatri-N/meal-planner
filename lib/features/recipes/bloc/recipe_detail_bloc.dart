@@ -25,13 +25,15 @@ final class RecipeDetailStarted extends RecipeDetailEvent {
   List<Object?> get props => [recipeId];
 }
 
-final class RecipeServingsChanged extends RecipeDetailEvent {
-  const RecipeServingsChanged(this.servings);
+/// Adds [delta] (+1 / −1) to the current servings. A step rather than an
+/// absolute value, so quick repeated taps each count.
+final class RecipeServingsStepped extends RecipeDetailEvent {
+  const RecipeServingsStepped(this.delta);
 
-  final int servings;
+  final int delta;
 
   @override
-  List<Object?> get props => [servings];
+  List<Object?> get props => [delta];
 }
 
 class RecipeDetailState extends Equatable {
@@ -61,7 +63,7 @@ class RecipeDetailState extends Equatable {
 class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
   RecipeDetailBloc(this._getRecipe) : super(const RecipeDetailState()) {
     on<RecipeDetailStarted>(_onStarted);
-    on<RecipeServingsChanged>(_onServingsChanged);
+    on<RecipeServingsStepped>(_onServingsStepped);
   }
 
   final GetRecipeUseCase _getRecipe;
@@ -84,8 +86,8 @@ class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
     );
   }
 
-  void _onServingsChanged(
-    RecipeServingsChanged event,
+  void _onServingsStepped(
+    RecipeServingsStepped event,
     Emitter<RecipeDetailState> emit,
   ) {
     final detail = state.detail;
@@ -94,7 +96,10 @@ class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
       RecipeDetailState(
         viewState: state.viewState,
         detail: detail,
-        servings: event.servings.clamp(minServings, maxServings),
+        servings: (state.servings + event.delta).clamp(
+          minServings,
+          maxServings,
+        ),
       ),
     );
   }
