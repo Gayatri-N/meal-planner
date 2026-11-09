@@ -74,7 +74,7 @@ flowchart LR
         ┌───────────▼───┐    ┌───────▼────────┐     │
         │ DESIGN_SYSTEM │    │    DOMAIN      │     │
         │ views, tokens │    │ use cases,     │     │
-        │ GAFont, theme │    │ models, ports  │     │
+        │ AppFont, theme│    │ models, ports  │     │
         └───────────────┘    └───────▲────────┘     │
                                      │ implements   │
                              ┌───────┴────────┐     │
@@ -110,7 +110,7 @@ lib/
     logger/
   design_system/
     tokens/                 # color, spacing, radius
-    typography/             # GAFont enum — only way to apply fonts
+    typography/             # AppFont enum — only way to apply fonts
     components/
     views/                  # presentational screens (props + callbacks)
     theme/
@@ -380,7 +380,7 @@ Marathi must be natural terminology (कांदा, तूर डाळ, ज�
 
 **Do not add through V1:** `dio`, `riverpod`, `hive`, `drift`, `firebase_storage`, `firebase_messaging`, `cloud_functions`, `firebase_remote_config`, Mixpanel, Amplitude, Sentry, RevenueCat, phone auth, LLM APIs.
 
-Fonts: as required by the design system, exposed only through `GAFont`.
+Fonts: as required by the design system, exposed only through `AppFont`.
 
 ---
 

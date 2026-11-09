@@ -1,0 +1,122 @@
+{
+  "catalogVersion": 1,
+  "ingredients": [
+    { "id": "poha", "nameEn": "Poha (thick)", "nameMr": "पोहे", "aliases": ["pohe", "poha", "flattened rice", "beaten rice"], "category": "grains", "commonUnits": ["g", "cup"] },
+    { "id": "onion", "nameEn": "Onion", "nameMr": "कांदा", "aliases": ["kanda", "kande"], "category": "vegetables", "commonUnits": ["pc", "g"] },
+    { "id": "peanuts", "nameEn": "Peanuts", "nameMr": "शेंगदाणे", "aliases": ["shengdane", "shengdana", "groundnuts"], "category": "nuts", "commonUnits": ["tbsp", "g", "cup"] },
+    { "id": "green_chilli", "nameEn": "Green chilli", "nameMr": "हिरवी मिरची", "aliases": ["mirchi", "hirvi mirchi"], "category": "vegetables", "commonUnits": ["pc"] },
+    { "id": "curry_leaves", "nameEn": "Curry leaves", "nameMr": "कढीपत्ता", "aliases": ["kadhipatta", "kadipatta"], "category": "herbs", "commonUnits": ["sprig"] },
+    { "id": "mustard_seeds", "nameEn": "Mustard seeds", "nameMr": "मोहरी", "aliases": ["mohari", "rai"], "category": "spices", "commonUnits": ["tsp"] },
+    { "id": "cumin_seeds", "nameEn": "Cumin seeds", "nameMr": "जिरे", "aliases": ["jire", "jeera"], "category": "spices", "commonUnits": ["tsp"] },
+    { "id": "turmeric", "nameEn": "Turmeric", "nameMr": "हळद", "aliases": ["halad", "haldi"], "category": "spices", "commonUnits": ["tsp"] },
+    { "id": "asafoetida", "nameEn": "Asafoetida", "nameMr": "हिंग", "aliases": ["hing"], "category": "spices", "commonUnits": ["pinch", "tsp"] },
+    { "id": "oil", "nameEn": "Oil", "nameMr": "तेल", "aliases": ["tel"], "category": "oils", "commonUnits": ["tbsp", "tsp", "ml"] },
+    { "id": "ghee", "nameEn": "Ghee", "nameMr": "तूप", "aliases": ["tup", "toop"], "category": "dairy", "commonUnits": ["tsp", "tbsp"] },
+    { "id": "sugar", "nameEn": "Sugar", "nameMr": "साखर", "aliases": ["sakhar"], "category": "staples", "commonUnits": ["tsp", "tbsp", "g"] },
+    { "id": "salt", "nameEn": "Salt", "nameMr": "मीठ", "aliases": ["mith", "meeth"], "category": "staples", "commonUnits": ["tsp"] },
+    { "id": "lemon", "nameEn": "Lemon", "nameMr": "लिंबू", "aliases": ["limbu", "nimbu"], "category": "fruits", "commonUnits": ["pc"] },
+    { "id": "coriander_leaves", "nameEn": "Coriander leaves", "nameMr": "कोथिंबीर", "aliases": ["kothimbir", "cilantro", "dhania"], "category": "herbs", "commonUnits": ["tbsp", "bunch"] },
+    { "id": "besan", "nameEn": "Gram flour (besan)", "nameMr": "बेसन", "aliases": ["besan", "chickpea flour", "harbhara pith"], "category": "pulses", "commonUnits": ["g", "cup", "tbsp"] },
+    { "id": "garlic", "nameEn": "Garlic", "nameMr": "लसूण", "aliases": ["lasun", "lasoon"], "category": "vegetables", "commonUnits": ["clove", "g"] },
+    { "id": "toor_dal", "nameEn": "Toor dal", "nameMr": "तूर डाळ", "aliases": ["tur dal", "toor", "arhar dal", "turichi dal"], "category": "pulses", "commonUnits": ["g", "cup"] }
+  ],
+  "recipes": [
+    {
+      "id": "kanda_poha",
+      "nameEn": "Kanda Poha",
+      "nameMr": "कांदे पोहे",
+      "aliases": ["kande pohe", "kanda pohe", "onion poha", "pohe", "poha"],
+      "mealTypes": ["breakfast"],
+      "diet": "veg",
+      "baseServings": 2,
+      "prepMinutes": 10,
+      "cookMinutes": 10,
+      "regionIds": ["pune", "western_maharashtra"],
+      "occasionTags": ["everyday"],
+      "contentStatus": "draft",
+      "ingredientLines": [
+        { "ingredientId": "poha", "qty": 150, "unit": "g" },
+        { "ingredientId": "onion", "qty": 1, "unit": "pc" },
+        { "ingredientId": "peanuts", "qty": 2, "unit": "tbsp" },
+        { "ingredientId": "green_chilli", "qty": 2, "unit": "pc" },
+        { "ingredientId": "curry_leaves", "qty": 1, "unit": "sprig" },
+        { "ingredientId": "mustard_seeds", "qty": 1, "unit": "tsp" },
+        { "ingredientId": "turmeric", "qty": 0.25, "unit": "tsp" },
+        { "ingredientId": "oil", "qty": 1.5, "unit": "tbsp" },
+        { "ingredientId": "sugar", "qty": 1, "unit": "tsp" },
+        { "ingredientId": "salt", "unit": "to_taste" },
+        { "ingredientId": "lemon", "qty": 0.5, "unit": "pc" },
+        { "ingredientId": "coriander_leaves", "qty": 2, "unit": "tbsp" }
+      ],
+      "steps": [
+        { "en": "Rinse the poha in a sieve under running water for a few seconds, drain, and let it soften for 5 minutes.", "mr": "पोहे चाळणीत घेऊन पाण्याखाली काही सेकंद धुवा, पाणी निथळू द्या आणि ५ मिनिटे मऊ होऊ द्या." },
+        { "en": "Mix the salt and sugar into the poha.", "mr": "पोह्यांना मीठ आणि साखर लावून घ्या." },
+        { "en": "Heat the oil, fry the peanuts until crisp, then add the mustard seeds and let them splutter.", "mr": "तेल गरम करून शेंगदाणे कुरकुरीत तळा, मग मोहरी घालून तडतडू द्या." },
+        { "en": "Add the curry leaves, green chillies and onion; cook until the onion is soft.", "mr": "कढीपत्ता, हिरवी मिरची आणि कांदा घालून कांदा मऊ होईपर्यंत परता." },
+        { "en": "Add the turmeric, then the poha. Mix gently, cover and steam on low heat for 2–3 minutes.", "mr": "हळद घाला, मग पोहे घालून हलक्या हाताने मिसळा. झाकण ठेवून मंद आचेवर २–३ मिनिटे वाफ काढा." },
+        { "en": "Finish with lemon juice and coriander.", "mr": "वरून लिंबाचा रस आणि कोथिंबीर घाला." }
+      ]
+    },
+    {
+      "id": "pithla",
+      "nameEn": "Pithla",
+      "nameMr": "पिठलं",
+      "aliases": ["pithla", "pithale", "pitla", "pithle", "पिठले"],
+      "mealTypes": ["lunch", "dinner"],
+      "diet": "veg",
+      "baseServings": 2,
+      "prepMinutes": 5,
+      "cookMinutes": 15,
+      "regionIds": ["western_maharashtra", "marathwada", "vidarbha"],
+      "occasionTags": ["everyday"],
+      "contentStatus": "draft",
+      "ingredientLines": [
+        { "ingredientId": "besan", "qty": 60, "unit": "g" },
+        { "ingredientId": "onion", "qty": 1, "unit": "pc" },
+        { "ingredientId": "garlic", "qty": 4, "unit": "clove" },
+        { "ingredientId": "green_chilli", "qty": 2, "unit": "pc" },
+        { "ingredientId": "curry_leaves", "qty": 1, "unit": "sprig" },
+        { "ingredientId": "mustard_seeds", "qty": 0.5, "unit": "tsp" },
+        { "ingredientId": "cumin_seeds", "qty": 0.5, "unit": "tsp" },
+        { "ingredientId": "turmeric", "qty": 0.25, "unit": "tsp" },
+        { "ingredientId": "oil", "qty": 2, "unit": "tbsp" },
+        { "ingredientId": "salt", "unit": "to_taste" },
+        { "ingredientId": "coriander_leaves", "qty": 2, "unit": "tbsp" }
+      ],
+      "steps": [
+        { "en": "Whisk the besan with 300 ml water and a little salt into a smooth batter with no lumps.", "mr": "बेसनात ३०० मिली पाणी आणि थोडं मीठ घालून गुठळ्या न राहता एकजीव करा." },
+        { "en": "Heat the oil; add the mustard and cumin seeds, then the garlic, green chillies and curry leaves.", "mr": "तेल गरम करून मोहरी, जिरे घाला; मग लसूण, हिरवी मिरची आणि कढीपत्ता घाला." },
+        { "en": "Add the onion and cook until soft, then add the turmeric.", "mr": "कांदा घालून मऊ होईपर्यंत परता, मग हळद घाला." },
+        { "en": "Pour in the batter while stirring and cook on low heat for 5–7 minutes, until thick and no longer raw-smelling.", "mr": "सतत ढवळत पीठ ओता आणि घट्ट होऊन कच्चा वास जाईपर्यंत मंद आचेवर ५–७ मिनिटे शिजवा." },
+        { "en": "Cover for a minute, garnish with coriander and serve hot with bhakri.", "mr": "एक मिनिट झाकण ठेवा, कोथिंबीर घालून भाकरीसोबत गरम वाढा." }
+      ]
+    },
+    {
+      "id": "varan",
+      "nameEn": "Varan",
+      "nameMr": "वरण",
+      "aliases": ["varan", "waran", "tur dal varan", "toor dal varan", "plain dal"],
+      "mealTypes": ["lunch", "dinner"],
+      "diet": "veg",
+      "baseServings": 3,
+      "prepMinutes": 5,
+      "cookMinutes": 20,
+      "regionIds": ["pune", "western_maharashtra"],
+      "occasionTags": ["everyday"],
+      "contentStatus": "draft",
+      "ingredientLines": [
+        { "ingredientId": "toor_dal", "qty": 100, "unit": "g" },
+        { "ingredientId": "turmeric", "qty": 0.25, "unit": "tsp" },
+        { "ingredientId": "asafoetida", "qty": 1, "unit": "pinch" },
+        { "ingredientId": "salt", "unit": "to_taste" },
+        { "ingredientId": "ghee", "qty": 3, "unit": "tsp", "optional": true }
+      ],
+      "steps": [
+        { "en": "Wash the toor dal two or three times.", "mr": "तूर डाळ दोन-तीन वेळा धुवा." },
+        { "en": "Pressure-cook it with 300 ml water, the turmeric and asafoetida for 3–4 whistles.", "mr": "३०० मिली पाणी, हळद आणि हिंग घालून कुकरमध्ये ३–४ शिट्ट्या काढा." },
+        { "en": "Mash the dal until smooth, add about 200 ml hot water and the salt, and simmer for 3–4 minutes.", "mr": "डाळ एकजीव घोटून घ्या, सुमारे २०० मिली गरम पाणी आणि मीठ घालून ३–४ मिनिटे उकळा." },
+        { "en": "Serve over hot rice with a spoon of ghee (varan-bhaat).", "mr": "गरम भातावर वरण आणि चमचाभर तूप घालून वाढा (वरण-भात)." }
+      ]
+    }
+  ]
+}
