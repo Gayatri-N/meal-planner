@@ -51,7 +51,7 @@ void main() {
       expect(find.text('Ingredients'), findsOneWidget);
       expect(find.text('60 g'), findsOneWidget); // base: 2 servings
 
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
       await tester.pumpAndSettle();
       expect(find.text('90 g'), findsOneWidget); // 3 servings
       await tester.scrollUntilVisible(find.text('to taste'), 200);
