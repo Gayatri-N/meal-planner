@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/helpers/app_exception.dart';
-import '../../../core/helpers/debounce.dart';
+import '../../../core/helpers/event_transformers.dart';
 import '../../../design_system/view_state.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../domain/use_cases/search_recipes_use_case.dart';

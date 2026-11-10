@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/helpers/app_exception.dart';
+import '../../../core/helpers/event_transformers.dart';
 import '../../../design_system/view_state.dart';
 import '../../../domain/models/meal_type.dart';
 import '../../../domain/models/servings.dart';
@@ -118,7 +119,8 @@ class RecipeDetailBloc extends Bloc<RecipeDetailEvent, RecipeDetailState> {
     : super(const RecipeDetailState()) {
     on<RecipeDetailStarted>(_onStarted);
     on<RecipeServingsStepped>(_onServingsStepped);
-    on<RecipeAddToTodayRequested>(_onAddToToday);
+    // One at a time: two quick adds must not both see an empty slot.
+    on<RecipeAddToTodayRequested>(_onAddToToday, transformer: sequential());
   }
 
   final GetRecipeUseCase _getRecipe;

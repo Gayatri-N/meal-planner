@@ -51,17 +51,21 @@ abstract final class DayDto {
     return Day(date: date, meals: meals);
   }
 
+  // Every field is read with a type check, never a cast: a value of the
+  // wrong type falls back to a default (or drops that one item), so one
+  // bad field never breaks the whole day.
+
   static Meal? _meal(MealType type, Object? json) {
     if (json is! Map<String, Object?>) return null;
-    final status = MealStatus.tryParse(json['status'] as String? ?? '');
     final items = json['items'];
     return Meal(
       type: type,
-      status: status ?? MealStatus.planned,
+      status:
+          MealStatus.tryParse(_string(json['status']) ?? '') ??
+          MealStatus.planned,
       // Stored in UTC; the app works in device-local time.
-      statusChangedAt: DateTime.tryParse(
-        json['statusChangedAt'] as String? ?? '',
-      )?.toLocal(),
+      statusChangedAt: DateTime.tryParse(_string(json['statusChangedAt']) ?? '')
+          ?.toLocal(),
       items: [
         if (items is Map<String, Object?>)
           for (final MapEntry(key: id, value: itemJson) in items.entries)
@@ -72,26 +76,43 @@ abstract final class DayDto {
 
   static MealItem? _item(String id, Object? json) {
     if (json is! Map<String, Object?>) return null;
-    final order = json['order'];
-    final orderValue = order is int ? order : 0;
-    return switch (json['kind']) {
-      'recipe' => RecipeMealItem(
-        id: id,
-        order: orderValue,
-        recipeId: json['recipeId'] as String? ?? '',
-        servings: json['servings'] as int? ?? 1,
-        nameEn: json['nameEn'] as String? ?? '',
-        nameMr: json['nameMr'] as String? ?? '',
-      ),
-      'manual' => ManualMealItem(
-        id: id,
-        order: orderValue,
-        label: json['label'] as String? ?? '',
-        quantityText: json['quantityText'] as String?,
-      ),
-      _ => null,
-    };
+    final order = _int(json['order']) ?? 0;
+    switch (json['kind']) {
+      case 'recipe':
+        final recipeId = _string(json['recipeId']);
+        if (recipeId == null) return null; // useless without a recipe
+        final nameEn = _string(json['nameEn']) ?? recipeId;
+        return RecipeMealItem(
+          id: id,
+          order: order,
+          recipeId: recipeId,
+          servings: _int(json['servings']) ?? 1,
+          nameEn: nameEn,
+          nameMr: _string(json['nameMr']) ?? nameEn,
+        );
+      case 'manual':
+        final label = _string(json['label']);
+        if (label == null) return null;
+        return ManualMealItem(
+          id: id,
+          order: order,
+          label: label,
+          quantityText: _string(json['quantityText']),
+        );
+      default:
+        return null;
+    }
   }
+
+  static String? _string(Object? v) => v is String && v.isNotEmpty ? v : null;
+
+  /// Accepts whole-number doubles too: Firestore and other JSON writers
+  /// may store `2` as `2.0`.
+  static int? _int(Object? v) => switch (v) {
+    int() => v,
+    double() when v == v.roundToDouble() && v.isFinite => v.toInt(),
+    _ => null,
+  };
 
   /// A whole slot, for `update({slot(type): mealToJson(meal)})`.
   static Map<String, Object?> mealToJson(Meal meal) => {

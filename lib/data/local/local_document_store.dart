@@ -67,7 +67,9 @@ class LocalDocumentStore {
     final key = _key(collection, id);
     late final StreamController<JsonMap?> controller;
     void push() {
-      if (!controller.isClosed) {
+      // hasListener is false once cancelled, including while the first
+      // load is still running.
+      if (controller.hasListener) {
         controller.add(_copy(_data?[collection]?[id]));
       }
     }
@@ -78,16 +80,23 @@ class LocalDocumentStore {
         await _ensureLoaded();
         push();
       },
-      onCancel: () => _watchers[key]?.remove(push),
+      onCancel: () {
+        _watchers[key]?.remove(push);
+        return controller.close();
+      },
     );
     return controller.stream;
   }
 
   /// Applies [fields] to the document, creating it if missing. Keys are
-  /// dotted paths; a value of [deleteField] removes that field.
+  /// dotted paths; a value of [deleteField] removes that field. Deleting
+  /// from a document that does not exist does nothing (no empty document
+  /// is created).
   Future<void> update(String collection, String id, JsonMap fields) async {
     await _ensureLoaded();
     final docs = (_data ??= {}).putIfAbsent(collection, () => {});
+    final onlyDeletes = fields.values.every((v) => identical(v, deleteField));
+    if (onlyDeletes && !docs.containsKey(id)) return;
     final doc = docs.putIfAbsent(id, () => {});
     for (final MapEntry(key: path, value: value) in fields.entries) {
       _apply(doc, path.split('.'), _copyValue(value));
@@ -147,15 +156,30 @@ class LocalDocumentStore {
 
   Future<void> _ensureLoaded() => _loading ??= _load();
 
+  /// Never throws: on any failure the store starts empty (and, if the
+  /// file could not be dealt with safely, memory-only for this session),
+  /// so the app keeps working instead of every call failing.
   Future<void> _load() async {
     final resolve = directory;
     if (resolve == null) {
       _data = {}; // memory only; _file stays null, so nothing is written
       return;
     }
-    final dir = await resolve();
-    final file = _file = File('${dir.path}/$fileName');
+    final File file;
+    try {
+      file = File('${(await resolve()).path}/$fileName');
+    } on Object catch (e, s) {
+      logger.error(
+        'No storage directory; this session is memory-only',
+        error: e,
+        stackTrace: s,
+        name: 'store',
+      );
+      _data = {};
+      return;
+    }
     if (!file.existsSync()) {
+      _file = file;
       _data = {};
       return;
     }
@@ -170,25 +194,44 @@ class LocalDocumentStore {
               id: doc as JsonMap,
           },
       };
+      _file = file;
     } on Object catch (e, s) {
       // Keep the unreadable file for diagnosis and start empty rather
       // than crash on every launch.
       final backup =
           '${file.path}.corrupt-${DateTime.now().millisecondsSinceEpoch}';
       logger.error(
-        'Unreadable $fileName; moved to $backup',
+        'Unreadable $fileName; moving it to $backup',
         error: e,
         stackTrace: s,
         name: 'store',
       );
-      await file.rename(backup);
       _data = {};
+      try {
+        await file.rename(backup);
+        _file = file; // set aside; safe to write a fresh file
+      } on Object catch (e, s) {
+        // Could not move it: leave _file null so this session never
+        // overwrites it. Changes stay in memory until the next launch.
+        logger.error(
+          'Could not move $fileName aside; this session is memory-only',
+          error: e,
+          stackTrace: s,
+          name: 'store',
+        );
+      }
     }
   }
 
+  /// Queues a write of the current data. Each write is the whole store,
+  /// so if one fails the next one still saves everything. The chain
+  /// itself swallows the failure (the caller still gets the error), so a
+  /// single failed write never blocks the writes after it.
   Future<void> _persist() {
     final snapshot = jsonEncode(_data);
-    return _pendingWrite = _pendingWrite.then((_) => _write(snapshot));
+    final write = _pendingWrite.then((_) => _write(snapshot));
+    _pendingWrite = write.then<void>((_) {}, onError: (Object _) {});
+    return write;
   }
 
   /// Write to a temp file, then rename over the real one, so a crash

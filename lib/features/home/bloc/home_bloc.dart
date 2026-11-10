@@ -18,21 +18,27 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._watchDay, this._setStatus, this._clearMeal)
     : super(const HomeState()) {
     on<HomeStarted>(_onStarted);
+    // Act on the day shown on screen, not the clock's "today": around
+    // midnight the two can differ for up to a minute.
     on<HomeMealStatusChanged>(
-      (e, _) => _setStatus(type: e.type, status: e.status),
+      (e, _) =>
+          _setStatus(type: e.type, status: e.status, date: state.day?.date),
     );
-    on<HomeMealRemoved>((e, _) => _clearMeal(type: e.type));
+    on<HomeMealRemoved>(
+      (e, _) => _clearMeal(type: e.type, date: state.day?.date),
+    );
   }
 
   final WatchDayUseCase _watchDay;
   final SetMealStatusUseCase _setStatus;
   final ClearMealUseCase _clearMeal;
 
-  /// Follows today's record; every change (here or from a recipe screen)
-  /// arrives through this stream, so there is no manual refresh.
+  /// Follows today's record, switching days at midnight. Every change
+  /// (here or from a recipe screen) arrives through this stream, so
+  /// there is no manual refresh.
   Future<void> _onStarted(HomeStarted event, Emitter<HomeState> emit) =>
       emit.forEach(
-        _watchDay(),
+        _watchDay.watchToday(),
         onData: (day) => HomeState(viewState: ViewState.content, day: day),
       );
 }

@@ -59,7 +59,7 @@ class HomePage extends StatelessWidget {
 
     return MealSlotData(
       title: l10n.mealType(type.name),
-      dishes: [for (final item in meal.items) _dishName(item, mr: mr)],
+      dishes: [for (final item in meal.items) mealItemName(item, marathi: mr)],
       emptyText: l10n.emptyMeal,
       emptyAction: MealSlotAction(
         label: l10n.findRecipe,
@@ -112,11 +112,4 @@ class HomePage extends StatelessWidget {
       onPressed: () => bloc.add(HomeMealRemoved(meal.type)),
     ),
   ];
-
-  /// Names come from the snapshot stored on the item, not the live
-  /// catalog, so they match what was planned (PRD §13).
-  static String _dishName(MealItem item, {required bool mr}) => switch (item) {
-    RecipeMealItem() => mr ? item.nameMr : item.nameEn,
-    ManualMealItem() => item.label,
-  };
 }

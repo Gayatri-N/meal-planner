@@ -112,6 +112,30 @@ void main() {
       },
       verify: (bloc) => expect(bloc.state.servings, 4),
     );
+
+    blocTest<RecipeDetailBloc, RecipeDetailState>(
+      'two quick adds to the same slot are handled one after the other',
+      build: () => _detailBloc(
+        GetRecipeUseCase(
+          _FakeCatalogRepository(
+            recipes: [_recipe(id: 'two', baseServings: 2)],
+          ),
+        ),
+      ),
+      act: (bloc) async {
+        bloc.add(const RecipeDetailStarted('two'));
+        await Future<void>.delayed(Duration.zero);
+        bloc
+          ..add(const RecipeAddToTodayRequested(MealType.lunch))
+          ..add(const RecipeAddToTodayRequested(MealType.lunch));
+      },
+      wait: const Duration(milliseconds: 50),
+      verify: (bloc) {
+        expect(bloc.state.addCount, 2);
+        // The second saw the first's result, not an empty slot.
+        expect(bloc.state.lastAdd?.outcome, AddToMealOutcome.alreadyThere);
+      },
+    );
   });
 
   group('RecipesBloc', () {

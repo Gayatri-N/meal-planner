@@ -11,10 +11,87 @@ void main() {
   late Directory dir;
 
   setUp(() => dir = Directory.systemTemp.createTempSync('mp_store_'));
-  tearDown(() => dir.deleteSync(recursive: true));
+  tearDown(() {
+    if (dir.existsSync()) {
+      Process.runSync('chmod', ['-R', 'u+w', dir.path]);
+      dir.deleteSync(recursive: true);
+    }
+  });
 
   LocalDocumentStore store() =>
       LocalDocumentStore(directory: () async => dir, logger: Logger());
+
+  File file() => File('${dir.path}/local_store.json');
+
+  Map<String, Object?> savedDoc(String id) {
+    final saved = jsonDecode(file().readAsStringSync()) as Map<String, Object?>;
+    return (saved['days']! as Map<String, Object?>)[id]!
+        as Map<String, Object?>;
+  }
+
+  group('LocalDocumentStore failure handling', () {
+    test('a failed write does not block later writes', () async {
+      final s = store();
+      await s.update('days', 'd1', {'a': 1});
+
+      // The directory disappears: this write fails…
+      dir.deleteSync(recursive: true);
+      await expectLater(s.update('days', 'd1', {'b': 2}), throwsA(anything));
+
+      // …and once it's back, the next write saves everything, including
+      // the change whose own write failed.
+      dir.createSync();
+      await s.update('days', 'd1', {'c': 3});
+      expect(savedDoc('d1'), {'a': 1, 'b': 2, 'c': 3});
+    });
+
+    test(
+      'unreadable file that cannot be moved: memory-only, file untouched',
+      () async {
+        file().writeAsStringSync('{not json');
+        Process.runSync('chmod', ['a-w', dir.path]); // rename will fail
+
+        final s = store();
+        expect(await s.get('days', 'd1'), isNull);
+        await s.update('days', 'd1', {'a': 1});
+        expect(await s.get('days', 'd1'), {'a': 1}, reason: 'still usable');
+        expect(
+          file().readAsStringSync(),
+          '{not json',
+          reason: 'not overwritten',
+        );
+      },
+    );
+
+    test('no storage directory: memory-only instead of failing', () async {
+      final s = LocalDocumentStore(
+        directory: () async => throw const FileSystemException('none'),
+        logger: Logger(),
+      );
+      await s.update('days', 'd1', {'a': 1});
+      expect(await s.get('days', 'd1'), {'a': 1});
+    });
+
+    test('a watch cancelled during the first load does not error', () async {
+      final s = LocalDocumentStore(
+        directory: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+          return dir;
+        },
+        logger: Logger(),
+      );
+      final sub = s.watch('days', 'd1').listen((_) => fail('cancelled'));
+      await sub.cancel();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+
+    test('deleting from a missing document creates nothing', () async {
+      final s = store();
+      await s.update('days', 'd1', {'slots.lunch': deleteField});
+      expect(await s.get('days', 'd1'), isNull);
+      expect(await s.all('days'), isEmpty);
+    });
+  });
 
   group('LocalDocumentStore', () {
     test('a missing document reads as null', () async {

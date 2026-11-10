@@ -163,6 +163,56 @@ void main() {
         const ManualMealItem(id: 'y', order: 1, label: 'Tea'),
       ]);
     });
+
+    test('wrong field types fall back instead of breaking the day', () {
+      final day = DayDto.fromJson(date, {
+        'slots': {
+          'lunch': {
+            'status': 42, // not a string → planned
+            'statusChangedAt': true, // not a string → none
+            'items': {
+              // Whole-number double, as Firestore may store it.
+              'a': {
+                'kind': 'recipe',
+                'order': 0.0,
+                'recipeId': 'pithla',
+                'servings': 2.0,
+                'nameEn': 'Pithla',
+                'nameMr': 7, // wrong type → falls back to nameEn
+              },
+              'b': {'kind': 'recipe', 'nameEn': 'No id'}, // dropped
+              'c': {'kind': 'manual', 'order': 'x', 'label': 'Tea'},
+            },
+          },
+          'dinner': {'status': 'cooked'},
+        },
+      });
+
+      final lunch = day.meal(MealType.lunch);
+      expect(lunch.status, MealStatus.planned);
+      expect(lunch.statusChangedAt, isNull);
+      expect(lunch.items, [
+        const RecipeMealItem(
+          id: 'a',
+          order: 0,
+          recipeId: 'pithla',
+          servings: 2,
+          nameEn: 'Pithla',
+          nameMr: 'Pithla',
+        ),
+        const ManualMealItem(id: 'c', order: 0, label: 'Tea'),
+      ]);
+      expect(day.meal(MealType.dinner).status, MealStatus.cooked);
+    });
+  });
+
+  group('LocalDayRepository deletes', () {
+    test('removing from an empty day writes no document', () async {
+      final store = tempStore(addTearDown: addTearDown);
+      await LocalDayRepository(store).clearMeal(date, MealType.lunch);
+
+      expect(await store.all(DayDto.collection), isEmpty);
+    });
   });
 
   group('CalendarDate', () {

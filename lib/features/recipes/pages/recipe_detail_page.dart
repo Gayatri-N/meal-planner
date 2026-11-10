@@ -6,7 +6,6 @@ import '../../../core/helpers/app_exception.dart';
 import '../../../design_system/view_state.dart';
 import '../../../design_system/views/recipe_detail_view.dart';
 import '../../../domain/models/ingredient.dart';
-import '../../../domain/models/meal_item.dart';
 import '../../../domain/models/meal_type.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../localization/l10n.dart';
@@ -123,11 +122,7 @@ class RecipeDetailPage extends StatelessWidget {
         snack(l10n.alreadyInMeal(meal));
       case AddToMealOutcome.needsReplaceConfirmation:
         final current = [
-          for (final item in result.meal.items)
-            switch (item) {
-              RecipeMealItem() => mr ? item.nameMr : item.nameEn,
-              ManualMealItem() => item.label,
-            },
+          for (final item in result.meal.items) mealItemName(item, marathi: mr),
         ].join(' + ');
         final bloc = context.read<RecipeDetailBloc>();
         final confirmed = await showDialog<bool>(

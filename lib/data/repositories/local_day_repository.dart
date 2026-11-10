@@ -62,8 +62,15 @@ class LocalDayRepository implements DayRepository {
   Future<void> clearMeal(CalendarDate date, MealType type) =>
       _update(date, {DayDto.slot(type): deleteField});
 
-  /// Every write also sets `date`, so each document is self-describing
-  /// (useful for queries like "this week" in Firestore).
-  Future<void> _update(CalendarDate date, Map<String, Object?> fields) =>
-      _store.update(DayDto.collection, date.key, {'date': date.key, ...fields});
+  /// Every write that adds data also sets `date`, so each document is
+  /// self-describing (useful for "this week" queries in Firestore).
+  /// Delete-only writes don't, so removing from an empty day never
+  /// creates an empty document that would later migrate to Firestore.
+  Future<void> _update(CalendarDate date, Map<String, Object?> fields) {
+    final onlyDeletes = fields.values.every((v) => identical(v, deleteField));
+    return _store.update(DayDto.collection, date.key, {
+      if (!onlyDeletes) 'date': date.key,
+      ...fields,
+    });
+  }
 }

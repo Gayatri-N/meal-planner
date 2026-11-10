@@ -1,5 +1,14 @@
 import 'dart:async';
 
+/// BLoC event transformer: handles events one at a time, in order. Use
+/// for read-then-write handlers (e.g. "add to meal"), so a second event
+/// sees the result of the first instead of the same starting state.
+///
+/// Signature matches `EventTransformer<E>` from package:bloc.
+Stream<E> Function(Stream<E> events, Stream<E> Function(E) mapper)
+sequential<E>() =>
+    (events, mapper) => events.asyncExpand(mapper);
+
 /// BLoC event transformer for search-as-you-type: waits until no new event
 /// has arrived for [duration], then handles the latest one. If a newer
 /// event gets through while a handler is still running, that handler is
