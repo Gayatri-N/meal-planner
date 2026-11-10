@@ -11,6 +11,22 @@ import 'package:mealplanner/domain/use_cases/get_recipe_use_case.dart';
 import 'package:mealplanner/domain/use_cases/search_recipes_use_case.dart';
 import 'package:mealplanner/features/recipes/bloc/recipe_detail_bloc.dart';
 import 'package:mealplanner/features/recipes/bloc/recipes_bloc.dart';
+import 'package:mealplanner/core/helpers/id_generator.dart';
+import 'package:mealplanner/data/repositories/local_day_repository.dart';
+import 'package:mealplanner/domain/use_cases/add_recipe_to_meal_use_case.dart';
+
+import '../../helpers/fakes.dart';
+
+RecipeDetailBloc _detailBloc(GetRecipeUseCase getRecipe) => RecipeDetailBloc(
+  getRecipe,
+  AddRecipeToMealUseCase(
+    LocalDayRepository(tempStore(addTearDown: addTearDown)),
+    FixedClock(DateTime(2026, 11, 9, 12)),
+    IdGenerator.seeded(1),
+    RecordingAnalytics(),
+    RecordingCrash(),
+  ),
+);
 
 /// Fails the first [failures] loads, then returns [recipes].
 class _FakeCatalogRepository implements CatalogRepository {
@@ -54,7 +70,7 @@ void main() {
   group('RecipeDetailBloc', () {
     blocTest<RecipeDetailBloc, RecipeDetailState>(
       'reports notFound for an unknown recipe id',
-      build: () => RecipeDetailBloc(GetRecipeUseCase(_FakeCatalogRepository())),
+      build: () => _detailBloc(GetRecipeUseCase(_FakeCatalogRepository())),
       act: (bloc) => bloc.add(const RecipeDetailStarted('no_such_recipe')),
       expect: () => [
         const RecipeDetailState(
@@ -66,7 +82,7 @@ void main() {
 
     blocTest<RecipeDetailBloc, RecipeDetailState>(
       'starts servings within the stepper range',
-      build: () => RecipeDetailBloc(
+      build: () => _detailBloc(
         GetRecipeUseCase(
           _FakeCatalogRepository(
             recipes: [_recipe(id: 'big', baseServings: 25)],
@@ -79,7 +95,7 @@ void main() {
 
     blocTest<RecipeDetailBloc, RecipeDetailState>(
       'quick repeated taps each add a serving',
-      build: () => RecipeDetailBloc(
+      build: () => _detailBloc(
         GetRecipeUseCase(
           _FakeCatalogRepository(
             recipes: [_recipe(id: 'two', baseServings: 2)],

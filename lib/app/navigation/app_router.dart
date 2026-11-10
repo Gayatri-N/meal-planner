@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../design_system/views/app_shell_view.dart';
+import '../../features/home/bloc/home_bloc.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/recipes/bloc/recipe_detail_bloc.dart';
 import '../../features/recipes/bloc/recipes_bloc.dart';
@@ -37,7 +38,10 @@ GoRouter createAppRouter() {
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (context, state) => const HomePage(),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => getIt<HomeBloc>()..add(const HomeStarted()),
+                  child: const HomePage(),
+                ),
               ),
             ],
           ),

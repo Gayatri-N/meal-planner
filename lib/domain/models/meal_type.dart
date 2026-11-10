@@ -7,5 +7,9 @@ enum MealType {
   eveningSnack,
   dinner;
 
+  /// The three main meals: Home's slots in MVP, and the ones a recipe can
+  /// be added to from the recipe screen. Snacks appear on Track in V1.
+  static const mains = [breakfast, lunch, dinner];
+
   static MealType? tryParse(String value) => values.asNameMap()[value];
 }
