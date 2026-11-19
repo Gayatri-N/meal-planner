@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/navigation/app_routes.dart';
 import '../../../design_system/views/today_view.dart';
 import '../../../domain/models/day.dart';
 import '../../../domain/models/meal.dart';
@@ -18,23 +19,28 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        final day = state.day;
-        return TodayView(
-          title: l10n.homeTitle,
-          dateLabel: day == null
-              ? ''
-              : MaterialLocalizations.of(context)
-                    .formatFullDate(day.date.toDateTime()),
-          viewState: state.viewState,
-          menuTooltip: l10n.mealActions,
-          slots: [
-            if (day != null)
-              for (final type in MealType.mains) _slot(context, day, type),
-          ],
-        );
-      },
+    return _OnResume(
+      // Back from the background: it may be a new day by now.
+      onResume: () => context.read<HomeBloc>().add(const HomeResumed()),
+      child: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          final day = state.day;
+          return TodayView(
+            title: l10n.homeTitle,
+            dateLabel: day == null
+                ? ''
+                : MaterialLocalizations.of(context)
+                      .formatFullDate(day.date.toDateTime()),
+            viewState: state.viewState,
+            menuTooltip: l10n.mealActions,
+            errorText: l10n.homeError,
+            slots: [
+              if (day != null)
+                for (final type in MealType.mains) _slot(context, day, type),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -46,7 +52,8 @@ class HomePage extends StatelessWidget {
 
     MealSlotAction status(String label, MealStatus to) => MealSlotAction(
       label: label,
-      onPressed: () => bloc.add(HomeMealStatusChanged(type, to)),
+      onPressed: () =>
+          bloc.add(HomeMealStatusChanged(type, to, from: meal.status)),
     );
 
     // The obvious next step; everything else goes in the menu (PRD §12).
@@ -63,7 +70,7 @@ class HomePage extends StatelessWidget {
       emptyText: l10n.emptyMeal,
       emptyAction: MealSlotAction(
         label: l10n.findRecipe,
-        onPressed: () => context.go('/recipes'),
+        onPressed: () => context.go(AppRoutes.recipes),
       ),
       statusLabel: l10n.mealStatus(meal.status.name),
       tone: switch (meal.status) {
@@ -76,7 +83,7 @@ class HomePage extends StatelessWidget {
       menuActions: meal.isEmpty ? const [] : _menu(meal, l10n, status, bloc),
       onTap: firstRecipe == null
           ? null
-          : () => context.go('/recipes/${firstRecipe.recipeId}'),
+          : () => context.go(AppRoutes.recipe(firstRecipe.recipeId)),
     );
   }
 
@@ -112,4 +119,36 @@ class HomePage extends StatelessWidget {
       onPressed: () => bloc.add(HomeMealRemoved(meal.type)),
     ),
   ];
+}
+
+/// Calls [onResume] when the app returns to the foreground.
+class _OnResume extends StatefulWidget {
+  const _OnResume({required this.onResume, required this.child});
+
+  final VoidCallback onResume;
+  final Widget child;
+
+  @override
+  State<_OnResume> createState() => _OnResumeState();
+}
+
+class _OnResumeState extends State<_OnResume> {
+  late final AppLifecycleListener _listener = AppLifecycleListener(
+    onResume: () => widget.onResume(),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _listener; // create now, not on first access
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

@@ -88,15 +88,19 @@ class LocalDocumentStore {
     return controller.stream;
   }
 
-  /// Applies [fields] to the document, creating it if missing. Keys are
-  /// dotted paths; a value of [deleteField] removes that field. Deleting
-  /// from a document that does not exist does nothing (no empty document
-  /// is created).
-  Future<void> update(String collection, String id, JsonMap fields) async {
+  /// Applies [fields] to the document. Keys are dotted paths; a value of
+  /// [deleteField] removes that field. A missing document is created,
+  /// unless [onlyIfExists] is set, in which case nothing happens (use for
+  /// removals, so they never create an empty document).
+  Future<void> update(
+    String collection,
+    String id,
+    JsonMap fields, {
+    bool onlyIfExists = false,
+  }) async {
     await _ensureLoaded();
     final docs = (_data ??= {}).putIfAbsent(collection, () => {});
-    final onlyDeletes = fields.values.every((v) => identical(v, deleteField));
-    if (onlyDeletes && !docs.containsKey(id)) return;
+    if (onlyIfExists && !docs.containsKey(id)) return;
     final doc = docs.putIfAbsent(id, () => {});
     for (final MapEntry(key: path, value: value) in fields.entries) {
       _apply(doc, path.split('.'), _copyValue(value));

@@ -33,9 +33,6 @@ class Meal extends Equatable {
   bool containsRecipe(String recipeId) =>
       items.any((i) => i is RecipeMealItem && i.recipeId == recipeId);
 
-  /// The order value for an item appended after the current ones.
-  int get nextOrder => items.isEmpty ? 0 : items.last.order + 1;
-
   @override
   List<Object?> get props => [type, status, statusChangedAt, items];
 }

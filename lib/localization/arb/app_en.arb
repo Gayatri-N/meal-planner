@@ -17,6 +17,7 @@
   "markSkipped": "Skip this meal",
   "markPlanned": "Back to planned",
   "removeMeal": "Remove from today",
+  "homeError": "Today's meals could not be loaded.",
   "emptyMeal": "Nothing planned yet",
   "findRecipe": "Find a recipe",
   "mealActions": "More actions",

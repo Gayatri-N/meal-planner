@@ -20,16 +20,22 @@ class SetMealStatusUseCase {
   final AnalyticsHandler _analytics;
   final CrashHandler _crash;
 
-  /// Returns false (and changes nothing) if the slot is empty or already
-  /// has [status].
+  /// Returns false (and changes nothing) if the slot is empty, already
+  /// has [status], or — when [from] is given — is no longer in [from].
+  ///
+  /// Pass [from] as the status the user saw when tapping. A double tap on
+  /// "Mark cooked" then can't also apply "Mark eaten" (the button that
+  /// replaced it), because the second tap was made from `planned` too.
   Future<bool> call({
     required MealType type,
     required MealStatus status,
+    MealStatus? from,
     CalendarDate? date,
   }) async {
     final day = date ?? CalendarDate.fromDateTime(_clock.now());
     final meal = (await _days.getDay(day)).meal(type);
     if (meal.isEmpty || !meal.status.canChangeTo(status)) return false;
+    if (from != null && meal.status != from) return false;
 
     fireAndForget(
       _days.setMealStatus(day, type, status, _clock.now()),

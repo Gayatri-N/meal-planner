@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/helpers/app_exception.dart';
+import '../../../core/navigation/app_routes.dart';
 import '../../../design_system/view_state.dart';
 import '../../../design_system/views/recipe_detail_view.dart';
 import '../../../domain/models/ingredient.dart';
@@ -98,19 +99,21 @@ class RecipeDetailPage extends StatelessWidget {
     final mr = isMarathi(context);
     final meal = l10n.mealType(type.name);
     final messenger = ScaffoldMessenger.of(context);
+    // Captured now: the snackbar outlives this page (it belongs to the
+    // app-wide messenger), so "View" may be tapped after the user has
+    // gone back and this context is gone.
+    final router = GoRouter.of(context);
 
-    void snack(String text, {bool showView = true}) {
+    void snack(String text) {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
             content: Text(text),
-            action: showView
-                ? SnackBarAction(
-                    label: l10n.view,
-                    onPressed: () => context.go('/home'),
-                  )
-                : null,
+            action: SnackBarAction(
+              label: l10n.view,
+              onPressed: () => router.go(AppRoutes.home),
+            ),
           ),
         );
     }

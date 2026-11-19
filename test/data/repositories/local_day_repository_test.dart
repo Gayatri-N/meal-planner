@@ -30,15 +30,13 @@ void main() {
         type: MealType.lunch,
         status: MealStatus.planned,
         statusChangedAt: at,
-        items: const [pithla],
+        items: const [
+          pithla,
+          ManualMealItem(id: 'tea', order: 1, label: 'Tea'),
+        ],
       );
 
       await repo.setMeal(date, meal);
-      await repo.addMealItem(
-        date,
-        MealType.lunch,
-        const ManualMealItem(id: 'tea', order: 1, label: 'Tea'),
-      );
       await repo.setMealStatus(date, MealType.lunch, MealStatus.eaten, at);
 
       final lunch = (await repo.getDay(date)).meal(MealType.lunch);
@@ -212,6 +210,61 @@ void main() {
       await LocalDayRepository(store).clearMeal(date, MealType.lunch);
 
       expect(await store.all(DayDto.collection), isEmpty);
+    });
+
+    test('removing the last meal deletes the day', () async {
+      final store = tempStore(addTearDown: addTearDown);
+      final repo = LocalDayRepository(store);
+      await repo.setMeal(
+        date,
+        Meal(
+          type: MealType.lunch,
+          status: MealStatus.planned,
+          items: const [pithla],
+        ),
+      );
+      await repo.setMeal(
+        date,
+        Meal(
+          type: MealType.dinner,
+          status: MealStatus.planned,
+          items: const [pithla],
+        ),
+      );
+
+      await repo.clearMeal(date, MealType.lunch);
+      expect(
+        await store.all(DayDto.collection),
+        hasLength(1),
+        reason: 'dinner left',
+      );
+
+      await repo.clearMeal(date, MealType.dinner);
+      expect(await store.all(DayDto.collection), isEmpty);
+    });
+
+    test('stored servings are clamped to the servings range', () {
+      Object? servingsOf(Object raw) =>
+          (DayDto.fromJson(date, {
+                    'slots': {
+                      'lunch': {
+                        'items': {
+                          'a': {
+                            'kind': 'recipe',
+                            'recipeId': 'x',
+                            'servings': raw,
+                          },
+                        },
+                      },
+                    },
+                  }).meal(MealType.lunch).items.single
+                  as RecipeMealItem)
+              .servings;
+
+      expect(servingsOf(0), 1);
+      expect(servingsOf(-3), 1);
+      expect(servingsOf(500), 20);
+      expect(servingsOf(4), 4);
     });
   });
 

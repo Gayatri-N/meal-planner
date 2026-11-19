@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/navigation/app_routes.dart';
 import '../../design_system/views/app_shell_view.dart';
 import '../../features/home/bloc/home_bloc.dart';
 import '../../features/home/pages/home_page.dart';
@@ -13,11 +14,7 @@ import '../../features/track/pages/track_page.dart';
 import '../../localization/l10n.dart';
 import '../di/di.dart';
 
-abstract final class AppRoutes {
-  static const home = '/home';
-  static const recipes = '/recipes';
-  static const track = '/track';
-}
+export '../../core/navigation/app_routes.dart';
 
 /// Dev aid: `--dart-define=INITIAL_ROUTE=/recipes/pithla` opens that screen.
 const _initialRoute = String.fromEnvironment(
@@ -56,11 +53,13 @@ GoRouter createAppRouter() {
                 ),
                 routes: [
                   GoRoute(
-                    path: ':id',
+                    path: ':${AppRoutes.recipeIdParam}',
                     builder: (context, state) => BlocProvider(
                       create: (_) => getIt<RecipeDetailBloc>()
                         ..add(
-                          RecipeDetailStarted(state.pathParameters['id'] ?? ''),
+                          RecipeDetailStarted(
+                            state.pathParameters[AppRoutes.recipeIdParam] ?? '',
+                          ),
                         ),
                       child: const RecipeDetailPage(),
                     ),

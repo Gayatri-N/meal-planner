@@ -4,6 +4,7 @@ import '../../domain/models/meal.dart';
 import '../../domain/models/meal_item.dart';
 import '../../domain/models/meal_status.dart';
 import '../../domain/models/meal_type.dart';
+import '../../domain/models/servings.dart';
 
 /// Converts day documents (`days/{yyyy-MM-dd}`) to and from the domain.
 ///
@@ -86,7 +87,12 @@ abstract final class DayDto {
           id: id,
           order: order,
           recipeId: recipeId,
-          servings: _int(json['servings']) ?? 1,
+          // Clamped like every servings value in the app (0, negative or
+          // huge values would break scaling and grocery maths).
+          servings: (_int(json['servings']) ?? minServings).clamp(
+            minServings,
+            maxServings,
+          ),
           nameEn: nameEn,
           nameMr: _string(json['nameMr']) ?? nameEn,
         );

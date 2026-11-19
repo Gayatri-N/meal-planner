@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealplanner/core/logger/logger.dart';
 import 'package:mealplanner/data/local/local_document_store.dart';
 import 'package:mealplanner/data/repositories/local_day_repository.dart';
+import 'package:mealplanner/design_system/view_state.dart';
 import 'package:mealplanner/domain/models/calendar_date.dart';
+import 'package:mealplanner/domain/models/day.dart';
 import 'package:mealplanner/domain/models/meal.dart';
 import 'package:mealplanner/domain/models/meal_item.dart';
 import 'package:mealplanner/domain/models/meal_status.dart';
@@ -15,16 +17,29 @@ import 'package:mealplanner/features/home/bloc/home_bloc.dart';
 
 import '../../helpers/fakes.dart';
 
+/// Every watch fails, as a Firestore permission error later might.
+class _FailingDays extends LocalDayRepository {
+  _FailingDays() : super(LocalDocumentStore.memory(logger: Logger()));
+
+  @override
+  Stream<Day> watchDay(CalendarDate date) =>
+      Stream.error(StateError('permission denied'));
+}
+
 void main() {
   const day1 = CalendarDate(2026, 11, 9);
   const day2 = CalendarDate(2026, 11, 10);
 
   late LocalDayRepository days;
   late FixedClock clock;
+  late RecordingAnalytics analytics;
+  late RecordingCrash crash;
 
   setUp(() async {
     days = LocalDayRepository(LocalDocumentStore.memory(logger: Logger()));
     clock = FixedClock(DateTime(2026, 11, 9, 23, 59, 50));
+    analytics = RecordingAnalytics();
+    crash = RecordingCrash();
     await days.setMeal(
       day1,
       Meal(
@@ -44,12 +59,13 @@ void main() {
     );
   });
 
-  HomeBloc build() {
-    final crash = RecordingCrash();
+  HomeBloc build([LocalDayRepository? repo]) {
+    final r = repo ?? days;
     return HomeBloc(
-      WatchDayUseCase(days, clock),
-      SetMealStatusUseCase(days, clock, RecordingAnalytics(), crash),
-      ClearMealUseCase(days, clock, crash),
+      WatchDayUseCase(r, clock),
+      SetMealStatusUseCase(r, clock, analytics, crash),
+      ClearMealUseCase(r, clock, crash),
+      crash,
     );
   }
 
@@ -59,9 +75,15 @@ void main() {
     act: (bloc) async {
       bloc.add(const HomeStarted());
       await Future<void>.delayed(Duration.zero);
-      // Midnight passes before Home's next date check.
-      clock.time = DateTime(2026, 11, 10, 0, 0, 5);
-      bloc.add(const HomeMealStatusChanged(MealType.lunch, MealStatus.cooked));
+      // Midnight passes before Home has switched days.
+      clock.time = DateTime(2026, 11, 10, 0, 0, 0);
+      bloc.add(
+        const HomeMealStatusChanged(
+          MealType.lunch,
+          MealStatus.cooked,
+          from: MealStatus.planned,
+        ),
+      );
       await Future<void>.delayed(const Duration(milliseconds: 20));
     },
     verify: (_) async {
@@ -72,5 +94,48 @@ void main() {
       );
       expect((await days.getDay(day2)).meals, isEmpty);
     },
+  );
+
+  blocTest<HomeBloc, HomeState>(
+    'a double tap on "Mark cooked" does not also mark eaten',
+    build: build,
+    act: (bloc) async {
+      bloc.add(const HomeStarted());
+      await Future<void>.delayed(Duration.zero);
+      // Second tap lands on the "Mark eaten" button that replaced
+      // "Mark cooked", but it was made from the same "planned" view.
+      bloc
+        ..add(
+          const HomeMealStatusChanged(
+            MealType.lunch,
+            MealStatus.cooked,
+            from: MealStatus.planned,
+          ),
+        )
+        ..add(
+          const HomeMealStatusChanged(
+            MealType.lunch,
+            MealStatus.eaten,
+            from: MealStatus.planned,
+          ),
+        );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    },
+    verify: (_) async {
+      expect(
+        (await days.getDay(day1)).meal(MealType.lunch).status,
+        MealStatus.cooked,
+      );
+      expect(analytics.names, ['track_meal_cooked']);
+    },
+  );
+
+  blocTest<HomeBloc, HomeState>(
+    'a failing day stream shows an error, not an endless spinner',
+    build: () => build(_FailingDays()),
+    act: (bloc) => bloc.add(const HomeStarted()),
+    wait: const Duration(milliseconds: 20),
+    expect: () => [const HomeState(viewState: ViewState.error)],
+    verify: (_) => expect(crash.errors, hasLength(1)),
   );
 }

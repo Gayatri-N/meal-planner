@@ -57,6 +57,7 @@ class TodayView extends StatelessWidget {
     required this.viewState,
     required this.slots,
     required this.menuTooltip,
+    required this.errorText,
   });
 
   final String title;
@@ -65,34 +66,50 @@ class TodayView extends StatelessWidget {
   final List<MealSlotData> slots;
   final String menuTooltip;
 
+  /// Shown when the day could not be loaded and there is nothing to show.
+  final String errorText;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: viewState == ViewState.loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                0,
-                AppSpacing.md,
-                AppSpacing.xl,
+      body: switch (viewState) {
+        ViewState.loading => const Center(child: CircularProgressIndicator()),
+        ViewState.error when slots.isEmpty => Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Text(
+              errorText,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-              children: [
-                Text(
-                  dateLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                for (final slot in slots) ...[
-                  _SlotCard(slot: slot, menuTooltip: menuTooltip),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-              ],
             ),
+          ),
+        ),
+        _ => ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.xl,
+          ),
+          children: [
+            Text(
+              dateLabel,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            for (final slot in slots) ...[
+              _SlotCard(slot: slot, menuTooltip: menuTooltip),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ],
+        ),
+      },
     );
   }
 }

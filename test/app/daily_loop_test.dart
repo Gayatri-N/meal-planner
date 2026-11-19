@@ -106,6 +106,23 @@ void main() {
     expect(find.text('Varan'), findsNothing);
   });
 
+  testWidgets('"View" still works after leaving the recipe screen', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await addToToday(tester, 'Varan', 'Dinner');
+
+    // Back to the list; the snackbar is still showing.
+    await tester.pageBack();
+    await tester.pump();
+    await tester.tap(find.text('View'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('What should we cook today?'), findsOneWidget);
+    expect(find.text('Varan'), findsOneWidget);
+  });
+
   testWidgets('remove empties the slot', (tester) async {
     await pumpApp(tester);
     await addToToday(tester, 'Kanda Poha', 'Breakfast');

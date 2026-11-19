@@ -11,6 +11,7 @@
   "markSkipped": "हे जेवण टाळा",
   "markPlanned": "पुन्हा नियोजित करा",
   "removeMeal": "आजच्या यादीतून काढा",
+  "homeError": "आजचं जेवण उघडता आलं नाही.",
   "emptyMeal": "अजून काही ठरवलं नाही",
   "findRecipe": "पाककृती शोधा",
   "mealActions": "अधिक पर्याय",

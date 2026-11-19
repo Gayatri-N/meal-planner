@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 import '../../domain/models/calendar_date.dart';
 import '../../domain/models/day.dart';
 import '../../domain/models/meal.dart';
-import '../../domain/models/meal_item.dart';
 import '../../domain/models/meal_status.dart';
 import '../../domain/models/meal_type.dart';
 import '../../domain/repositories/day_repository.dart';
@@ -44,10 +43,6 @@ class LocalDayRepository implements DayRepository {
       _update(date, {DayDto.slot(meal.type): DayDto.mealToJson(meal)});
 
   @override
-  Future<void> addMealItem(CalendarDate date, MealType type, MealItem item) =>
-      _update(date, {DayDto.item(type, item.id): DayDto.itemToJson(item)});
-
-  @override
   Future<void> setMealStatus(
     CalendarDate date,
     MealType type,
@@ -58,19 +53,22 @@ class LocalDayRepository implements DayRepository {
     DayDto.statusChangedAt(type): DayDto.timeToJson(changedAt),
   });
 
+  /// Removes the slot. A day left with no meals is deleted, so no empty
+  /// day documents pile up (or migrate to Firestore). Firestore: the same
+  /// two steps, `update({slot: FieldValue.delete()})` then `delete()` if
+  /// `slots` is empty.
   @override
-  Future<void> clearMeal(CalendarDate date, MealType type) =>
-      _update(date, {DayDto.slot(type): deleteField});
-
-  /// Every write that adds data also sets `date`, so each document is
-  /// self-describing (useful for "this week" queries in Firestore).
-  /// Delete-only writes don't, so removing from an empty day never
-  /// creates an empty document that would later migrate to Firestore.
-  Future<void> _update(CalendarDate date, Map<String, Object?> fields) {
-    final onlyDeletes = fields.values.every((v) => identical(v, deleteField));
-    return _store.update(DayDto.collection, date.key, {
-      if (!onlyDeletes) 'date': date.key,
-      ...fields,
-    });
+  Future<void> clearMeal(CalendarDate date, MealType type) async {
+    await _store.update(DayDto.collection, date.key, {
+      DayDto.slot(type): deleteField,
+    }, onlyIfExists: true);
+    if ((await getDay(date)).meals.isEmpty) {
+      await _store.delete(DayDto.collection, date.key);
+    }
   }
+
+  /// Every write also sets `date`, so each document is self-describing
+  /// (useful for "this week" queries in Firestore).
+  Future<void> _update(CalendarDate date, Map<String, Object?> fields) =>
+      _store.update(DayDto.collection, date.key, {'date': date.key, ...fields});
 }

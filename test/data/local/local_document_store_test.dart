@@ -85,11 +85,16 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
     });
 
-    test('deleting from a missing document creates nothing', () async {
+    test('onlyIfExists: no document is created', () async {
       final s = store();
-      await s.update('days', 'd1', {'slots.lunch': deleteField});
+      await s.update('days', 'd1', {
+        'slots.lunch': deleteField,
+      }, onlyIfExists: true);
       expect(await s.get('days', 'd1'), isNull);
-      expect(await s.all('days'), isEmpty);
+
+      await s.update('days', 'd1', {'a': 1});
+      await s.update('days', 'd1', {'b': 2}, onlyIfExists: true);
+      expect(await s.get('days', 'd1'), {'a': 1, 'b': 2});
     });
   });
 

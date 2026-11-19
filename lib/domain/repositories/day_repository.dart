@@ -1,7 +1,6 @@
 import '../models/calendar_date.dart';
 import '../models/day.dart';
 import '../models/meal.dart';
-import '../models/meal_item.dart';
 import '../models/meal_status.dart';
 import '../models/meal_type.dart';
 
@@ -24,11 +23,9 @@ abstract interface class DayRepository {
   Future<Day> getDay(CalendarDate date);
 
   /// Writes a whole slot (status, items). Used for a first item or a
-  /// replace.
+  /// replace. (V1's multi-dish meals add a per-item write with its first
+  /// caller: `DayDto.item(type, id)` is the field path.)
   Future<void> setMeal(CalendarDate date, Meal meal);
-
-  /// Adds one item to a slot that already exists.
-  Future<void> addMealItem(CalendarDate date, MealType type, MealItem item);
 
   Future<void> setMealStatus(
     CalendarDate date,
@@ -37,6 +34,7 @@ abstract interface class DayRepository {
     DateTime changedAt,
   );
 
-  /// Removes the slot entirely; it reads as empty afterwards.
+  /// Removes the slot entirely; it reads as empty afterwards. A day with
+  /// no meals left is removed too.
   Future<void> clearMeal(CalendarDate date, MealType type);
 }

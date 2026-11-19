@@ -15,41 +15,51 @@ class WatchDayUseCase {
   final DayRepository _days;
   final Clock _clock;
 
-  /// How often [watchToday] checks whether the date has changed.
-  static const dateCheckInterval = Duration(minutes: 1);
-
   CalendarDate today() => CalendarDate.fromDateTime(_clock.now());
 
   Stream<Day> call(CalendarDate date) => _days.watchDay(date);
 
-  /// Follows *today*: when the device date changes (midnight, or the app
-  /// resumes on a later day), switches to the new day's record. Checks
-  /// every [dateCheckInterval] rather than setting one timer for
-  /// midnight, so it also recovers after the phone slept through it.
-  Stream<Day> watchToday() {
-    StreamSubscription<Day>? subscription;
-    Timer? timer;
+  /// Follows *today*: switches to the new day's record when the device
+  /// date changes. Two triggers:
+  /// - a timer set for the next local midnight, for an app left open;
+  /// - [recheck], which the UI fires when the app returns to the
+  ///   foreground (timers don't run reliably while it's suspended).
+  Stream<Day> watchToday({Stream<void>? recheck}) {
+    StreamSubscription<Day>? daySubscription;
+    StreamSubscription<void>? recheckSubscription;
+    Timer? midnight;
     CalendarDate? current;
     late final StreamController<Day> controller;
 
     void follow() {
       final date = today();
-      if (date == current) return;
-      current = date;
-      unawaited(subscription?.cancel());
-      subscription = _days
-          .watchDay(date)
-          .listen(controller.add, onError: controller.addError);
+      if (date != current) {
+        current = date;
+        unawaited(daySubscription?.cancel());
+        daySubscription = _days
+            .watchDay(date)
+            .listen(controller.add, onError: controller.addError);
+      }
+      // (Re)arm for the next midnight, a second late so the clock has
+      // certainly moved to the new date. Local DateTime handles DST.
+      midnight?.cancel();
+      final now = _clock.now();
+      final next = DateTime(now.year, now.month, now.day + 1);
+      midnight = Timer(
+        next.difference(now) + const Duration(seconds: 1),
+        follow,
+      );
     }
 
     controller = StreamController<Day>(
       onListen: () {
         follow();
-        timer = Timer.periodic(dateCheckInterval, (_) => follow());
+        recheckSubscription = recheck?.listen((_) => follow());
       },
       onCancel: () async {
-        timer?.cancel();
-        await subscription?.cancel();
+        midnight?.cancel();
+        await recheckSubscription?.cancel();
+        await daySubscription?.cancel();
       },
     );
     return controller.stream;
