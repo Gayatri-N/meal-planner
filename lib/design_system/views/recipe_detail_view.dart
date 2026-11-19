@@ -31,6 +31,7 @@ class RecipeDetailData {
     required this.ingredients,
     required this.stepsHeading,
     required this.steps,
+    required this.addToTodayLabel,
     this.badge,
   });
 
@@ -45,6 +46,7 @@ class RecipeDetailData {
   final List<IngredientRowData> ingredients;
   final String stepsHeading;
   final List<String> steps;
+  final String addToTodayLabel;
   final String? badge;
 }
 
@@ -54,11 +56,13 @@ class RecipeDetailView extends StatelessWidget {
     required this.data,
     required this.onDecreaseServings,
     required this.onIncreaseServings,
+    required this.onAddToToday,
   });
 
   final RecipeDetailData data;
   final VoidCallback onDecreaseServings;
   final VoidCallback onIncreaseServings;
+  final VoidCallback onAddToToday;
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +105,15 @@ class RecipeDetailView extends StatelessWidget {
             servings: data.servings,
             onDecrease: data.canDecrease ? onDecreaseServings : null,
             onIncrease: data.canIncrease ? onIncreaseServings : null,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          FilledButton.icon(
+            onPressed: onAddToToday,
+            icon: const Icon(Icons.add),
+            label: Text(data.addToTodayLabel),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(data.ingredientsHeading, style: theme.textTheme.titleLarge),

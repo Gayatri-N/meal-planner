@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/navigation/app_routes.dart';
 import '../../../design_system/views/recipe_list_view.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../localization/l10n.dart';
@@ -25,7 +26,7 @@ class RecipesPage extends StatelessWidget {
         items: [for (final r in state.recipes) _item(r, l10n, mr: mr)],
         onQueryChanged: (q) =>
             context.read<RecipesBloc>().add(RecipesQueryChanged(q)),
-        onRecipeTap: (id) => context.go('/recipes/$id'),
+        onRecipeTap: (id) => context.go(AppRoutes.recipe(id)),
       ),
     );
   }

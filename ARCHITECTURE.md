@@ -248,6 +248,22 @@ Firestore paths alternate collection / document, so profile and settings are **f
 
 Product rules for the grocery list: [PRD §16](PRD.md#16-grocery-list).
 
+### Before Firebase: on-device store
+
+Until Setup S2 connects Firebase, user data lives in `LocalDocumentStore` (`lib/data/local/`): one JSON file in the app's documents directory, shaped like Firestore so the switch only touches the data layer.
+
+| Firestore | Local store |
+|-----------|-------------|
+| `users/{uid}/days/{date}` | `local_store.json` → `days` → `{date}`, same JSON |
+| `doc.update({'slots.lunch.status': …})` | `update('days', date, {'slots.lunch.status': …})`, same dotted paths (`DayDto`) |
+| `FieldValue.delete()` | `deleteField` |
+| `doc.snapshots()` | `watch()` (emits now, then on every change) |
+| `Timestamp` | ISO-8601 UTC string; converted in the repository |
+
+`DayRepository` is the seam: `LocalDayRepository` today, `FirestoreDayRepository` later, with the same `DayDto` paths and JSON. Use cases and UI don't change. `local_day_repository.dart` notes the exact Firestore calls, including creating the document before `update()` and not using `set(merge: true)` for dotted fields.
+
+**Migration on first Firebase launch:** after anonymous sign-in, if `local_store.json` exists, write each `store.all('days')` entry to `users/{uid}/days/{id}` (batched, `set` with the stored JSON, timestamps converted), then rename the file to `local_store.migrated.json`. Keep it until the next app version as a safety copy. This must run before Home subscribes to Firestore, so the first screen already shows the migrated data.
+
 ### Images (through V1)
 
 Bundled assets, `assets/recipes/{id}.webp`. Field `imageAsset` points at the asset. Remote Storage is V2.

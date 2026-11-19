@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../domain/models/meal_item.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../localization/l10n.dart';
 
@@ -7,6 +8,14 @@ import '../../../localization/l10n.dart';
 /// catalog, so this picks nameMr vs nameEn.
 bool isMarathi(BuildContext context) =>
     Localizations.localeOf(context).languageCode == 'mr';
+
+/// Display name of a meal item. Recipe items use the name snapshot
+/// stored on the item, not the live catalog, so they show what was
+/// planned (PRD §13). Used by Home and the replace dialog.
+String mealItemName(MealItem item, {required bool marathi}) => switch (item) {
+  RecipeMealItem() => marathi ? item.nameMr : item.nameEn,
+  ManualMealItem() => item.label,
+};
 
 /// Header text shared by the recipe list and the recipe screen.
 typedef RecipeHeaderText = ({
